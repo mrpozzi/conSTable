@@ -1,4 +1,31 @@
-sampleTables <-
+conSTable <-
+function(muTab, rowTot, prop, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,keepArgs=FALSE,...){
+	
+	bounds <- array(NA,c(dim(muTab),2))
+	dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
+	
+	if(!is.null(dim(prop))){
+		# prop is a by cell proportion
+		bounds[,,1] <- (1-prop)*muTab 
+		bounds[,,2] <- (1+prop)*muTab 
+		} else if(length(prop)==0){
+			# prop is a number
+			bounds[,,1] <- (1-prop)*muTab 
+			bounds[,,2] <- (1+prop)*muTab 
+			} else {
+				# prop is a by column proportion
+				bounds[,,1] <- do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j])*muTab[,j] ))
+				bounds[,,2] <- do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j])*muTab[,j] ))
+				}
+	controlCol <- rbind(colSums(bounds[,,1]),colSums(bounds[,,2]))
+	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=FALSE,...))
+	
+	}
+
+
+
+
+.sampleTables <-
 function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,keepArgs=FALSE){
 
 	call <- match.call()
