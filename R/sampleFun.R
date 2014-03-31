@@ -1,24 +1,29 @@
 conSTable <-
-function(muTab, rowTot, prop, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,keepArgs=FALSE,...){
+function(muTab, rowTot, prop, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
+	
+	if(transpose){
+		muTab <- t(muTab)
+		}
 	
 	bounds <- array(NA,c(dim(muTab),2))
 	dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
-	
 	if(!is.null(dim(prop))){
 		# prop is a by cell proportion
-		bounds[,,1] <- (1-prop)*muTab 
-		bounds[,,2] <- (1+prop)*muTab 
-		} else if(length(prop)==0){
+		bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
+		bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
+		} else if(length(prop)==1){
 			# prop is a number
-			bounds[,,1] <- (1-prop)*muTab 
-			bounds[,,2] <- (1+prop)*muTab 
+			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
+			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
 			} else {
 				# prop is a by column proportion
-				bounds[,,1] <- do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j])*muTab[,j] ))
-				bounds[,,2] <- do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j])*muTab[,j] ))
+				bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))
+				bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))
 				}
-	controlCol <- rbind(colSums(bounds[,,1]),colSums(bounds[,,2]))
-	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=FALSE,...))
+	
+	colTot <- colSums(muTab)
+	controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
+	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)#
 	
 	}
 
@@ -26,7 +31,7 @@ function(muTab, rowTot, prop, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=func
 
 
 .sampleTables <-
-function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,keepArgs=FALSE){
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,...){
 
 	call <- match.call()
 	
@@ -37,11 +42,15 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	
 	### zero rows	
 	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)
+	leaveOut <- -which(indZero)
 	if(any(indZero)){
-		muTab <- muTab[-which(indZero),]
-		n0 <- n0[-which(indZero)]
-		if(!is.null(controlRow))controlRow <- controlRow[-which(indZero),]
-		bounds <- bounds[-which(indZero),,]
+		if(!is.null(fixedRows)){
+			fixed <- which((1:nrow(muTab))[leaveOut]%in%fixed)
+			}
+		muTab <- muTab[leaveOut,]
+		n0 <- n0[leaveOut]
+		if(!is.null(controlRow))controlRow <- controlRow[leaveOut,]
+		bounds <- bounds[leaveOut,,]
 		}
 
 	nr<-nrow(muTab)
@@ -135,13 +144,14 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 
       okTab <- okTab[1:uniqueT]
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
+      row.names(bestTab) <- names(indZero[!indZero])
+      bestTab <- data.frame(bestTab)[names(indZero),]
       
-      bestTab <- do.call(rbind,lapply(1:length(indZero),function(i){
-      	if(indZero[i])return(rep(0,nc))
-      	return(bestTab[i-sum(indZero[1:i]),])
-      	}))
-
-      return(new("conTa",bestTab=bestTab,tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))
+      if(transpose){
+      	bestTab <- t(bestTab)
+      	okTab <- lapply(okTab,function(tab)t(tab))
+      	}
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))
       
       }
 

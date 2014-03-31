@@ -1,7 +1,7 @@
 Package: conSTable
 Type: Package
 Title: Constrained Sampling for Tables
-Version: 0.0
+Version: 0.1
 Date: 2014-01-21
 Author: Luca Pozzi, Marco Garieri, Natalia Golini
 Maintainer: Luca Pozzi <luca.pozzi@fao.org>
