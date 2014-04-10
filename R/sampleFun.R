@@ -1,28 +1,31 @@
 conSTable <-
-function(muTab, rowTot, prop, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
 	
 	if(transpose){
 		muTab <- t(muTab)
 		}
 	
-	bounds <- array(NA,c(dim(muTab),2))
-	dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
-	if(!is.null(dim(prop))){
-		# prop is a by cell proportion
-		bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
-		bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
-		} else if(length(prop)==1){
-			# prop is a number
+	colTot <- colSums(muTab)
+	
+	if(!is.null(prop)){
+		if(missing(controlCol)) controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
+		bounds <- array(NA,c(dim(muTab),2))
+		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
+		if(!is.null(dim(prop))){
+			# prop is a by cell proportion
 			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
 			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
-			} else {
-				# prop is a by column proportion
-				bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))
-				bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))
-				}
+			} else if(length(prop)==1){
+				# prop is a number
+				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
+				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
+				} else {
+					# prop is a by column proportion
+					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))
+					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))
+					}
+			} 
 	
-	colTot <- colSums(muTab)
-	controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
 	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)#
 	
 	}
