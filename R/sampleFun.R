@@ -1,5 +1,5 @@
 conSTable <-
-function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
 	
 	if(transpose){
 		muTab <- t(muTab)
@@ -7,24 +7,45 @@ function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE
 	
 	colTot <- colSums(muTab)
 	
-	if(!is.null(prop)){
-		if(missing(controlCol)) controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
+	if(!(is.null(prop)&is.null(shift))){
+		
 		bounds <- array(NA,c(dim(muTab),2))
 		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
-		if(!is.null(dim(prop))){
-			# prop is a by cell proportion
-			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
-			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
-			} else if(length(prop)==1){
+		
+		if(!is.null(prop)){
+			
+			if(missing(controlCol)) controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
+			
+			if(!is.null(dim(prop))|(length(prop)==1)){
+				# prop is a by cell proportion
 				# prop is a number
-				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
-				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
+				shift <- prop*sign(muTab)*muTab
 				} else {
 					# prop is a by column proportion
-					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))
-					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))
+					shift <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)prop[j]*sign(muTab[,j]))*muTab[,j] ))
 					}
-			} 
+				
+				} else {
+					
+					if(missing(controlCol)) {
+						if(is.null(dim(shift))){
+							controlCol <- rbind(colTot-shift,colTot+shift)
+							} else {
+								colShift <- apply(shift,1,max)
+								controlCol <- rbind(colTot-colShift,colTot+colShift)
+								}
+						}
+					
+					if(is.null(dim(shift))&(length(shift)!=1)){
+						# by column shift
+						shift <- as.matrix(do.call(cbind,lapply(1:nrow(muTab),function(i) shift)))
+						}
+					}
+			
+			bounds[,,"Lower"] <- as.matrix(muTab - shift)
+			bounds[,,"Upper"] <- as.matrix(muTab + shift)
+		
+		 }
 	
 	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)#
 	
@@ -44,7 +65,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		}else argz <- list()
 	
 	### zero rows	
-	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)
+	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
 	leaveOut <- -which(indZero)
 	if(any(indZero)){
 		if(!is.null(fixedRows)){
@@ -62,7 +83,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	okTab <- list()
 	
 	if(is.null(controlRow)) controlRow <- do.call(rbind,lapply(1:nr,function(i){
-		if(muTab[i,nc]==0) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
+		if(all(c(muTab[i,nc],bounds[i,nc,])==0)) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
 		range(bounds[i,nc,])
 		}))
 		
@@ -87,7 +108,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				nc<-ncol(muTab)
 				
 				### VARSTOCK structural 0
-				if(muTab[i,nc]==0){
+				if(all(c(muTab[i,nc],bounds[i,nc,])==0)){
 					nc <- max(which(muTab[i,-nc]!=0))
 					rrow[(1:length(rrow))>nc]<-0
 					
