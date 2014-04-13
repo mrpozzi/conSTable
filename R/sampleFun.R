@@ -63,7 +63,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		argz <- lapply(2:length(call),function(i)eval(call[[i]]))
 		names(argz) <- names(call)[2:length(names(call))]
 		}else argz <- list()
-	
+		
 	### zero rows	
 	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
 	leaveOut <- -which(indZero)
@@ -79,6 +79,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 
 	nr<-nrow(muTab)
 	nc<-ncol(muTab)
+	if(length(sdev==1)) sdev <- rep(sdev,nc)
 	
 	okTab <- list()
 	
@@ -114,7 +115,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					
 					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
 					
-					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev, lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow))], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)
 
 					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
@@ -122,7 +123,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						###VARSTOCK not structural 0
 						
 						#if(length(rrow[-nc])!=nc-1)browser()
-						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev, lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)
+						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[,-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)
 						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))
 						
 						}
