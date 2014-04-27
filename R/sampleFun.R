@@ -47,8 +47,8 @@ function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sd
 		
 		 }
 	
-	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)#
-	
+	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,...)#
+
 	}
 
 
@@ -66,6 +66,10 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		
 	### zero rows	
 	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
+	names(indZero) <- rownames(muTab)
+	if(is.null(names(indZero))){
+		names(indZero) <- 1:length(indZero)
+		}
 	leaveOut <- -which(indZero)
 	if(any(indZero)){
 		if(!is.null(fixedRows)){
@@ -166,11 +170,12 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}
 		iter <- iter + 1L
         }
-
+      
       okTab <- okTab[1:uniqueT]
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
       bestTab <- data.frame(bestTab)[names(indZero),]
+      bestTab[indZero,] <- 0
       
       if(transpose){
       	bestTab <- t(bestTab)
@@ -200,4 +205,17 @@ setMethod("show",signature("conTa"),function(object){
 	cat(object@iters,"\n")
 	cat("Objective Function: ")
 	cat(object@objective,"\n")
+	})
+
+
+setMethod("print",signature("conTa"),function(x,...){
+	cat("Call:\n")
+	print(object@call)
+	cat("\nOptimal Table: ")
+	print(object@bestTab)
+	cat("Number of Iterations: ")
+	cat(object@iters,"\n")
+	cat("Objective Function: ")
+	cat(object@objective,"\n")
+	if(!missing(file)) write.csv(object@bestTab,...)
 	})
