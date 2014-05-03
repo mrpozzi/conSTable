@@ -178,7 +178,8 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       ## Add name when indZero (otherwise NA) #Marco
       row.names(bestTab) <- names(indZero)
       bestTab[indZero,] <- 0
-      
+      ## Add colon names
+      colnames(bestTab) <- colnames(muTab)
       if(transpose){
       	bestTab <- t(bestTab)
       	okTab <- lapply(okTab,function(tab)t(tab))
