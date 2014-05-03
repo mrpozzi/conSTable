@@ -175,6 +175,8 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
       bestTab <- data.frame(bestTab)[names(indZero),]
+      ## Add name when indZero (otherwise NA) #Marco
+      row.names(bestTab) <- names(indZero)
       bestTab[indZero,] <- 0
       
       if(transpose){
