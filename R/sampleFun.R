@@ -1,5 +1,5 @@
 conSTable <-
-function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
 	
 	if(transpose){
 		muTab <- t(muTab)
@@ -7,9 +7,11 @@ function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sd
 	
 	colTot <- colSums(muTab)
 	
-	if(is.null(prop)&(shift==0)) error("When prop is NULL shift must be > 0")
+	if(!is.null(prop)) {
+		if(any(prop > 1)) stop("prop must be a number between 0 and 1")
+		} else if(all(shift==0)) stop("When prop is NULL shift must be > 0")
 	
-	if(!(is.null(prop)&is.null(shift))){
+	if(!(is.null(prop) & all(shift==0))){
 		
 		bounds <- array(NA,c(dim(muTab),2))
 		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
@@ -24,7 +26,7 @@ function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sd
 				shift <- prop*sign(muTab)*muTab
 				} else {
 					# prop is a by column proportion
-					shift <- as.matrix(do.call(rbind,lapply(1:length(prop),function(j) prop[j]*sign(muTab[,j]))*muTab[,j] ))
+					shift <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j) prop[j]*sign(muTab[,j])*muTab[,j] )))
 					}
 				
 				} else {
