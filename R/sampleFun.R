@@ -7,6 +7,8 @@ function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sd
 	
 	colTot <- colSums(muTab)
 	
+	if(is.null(prop)&(shift==0)) error("When prop is NULL shift must be > 0")
+	
 	if(!(is.null(prop)&is.null(shift))){
 		
 		bounds <- array(NA,c(dim(muTab),2))
@@ -22,7 +24,7 @@ function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sd
 				shift <- prop*sign(muTab)*muTab
 				} else {
 					# prop is a by column proportion
-					shift <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)prop[j]*sign(muTab[,j]))*muTab[,j] ))
+					shift <- as.matrix(do.call(rbind,lapply(1:length(prop),function(j) prop[j]*sign(muTab[,j]))*muTab[,j] ))
 					}
 				
 				} else {
@@ -38,7 +40,7 @@ function(muTab, rowTot, prop=NULL, shift=NULL, controlCol, nIter=100, N=10000,sd
 					
 					if(is.null(dim(shift))&(length(shift)!=1)){
 						# by column shift
-						shift <- as.matrix(do.call(cbind,lapply(1:nrow(muTab),function(i) shift)))
+						shift <- as.matrix(do.call(rbind,lapply(1:nrow(muTab),function(i) shift)))
 						}
 					}
 			
@@ -184,7 +186,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	bestTab <- t(bestTab)
       	okTab <- lapply(okTab,function(tab)t(tab))
       	}
-      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
       }
 

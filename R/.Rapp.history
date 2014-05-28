@@ -1,0 +1,691 @@
+if(!is.null(dim(prop))){#
+		# prop is a by cell proportion#
+		bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+		bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+		} else if(length(prop)==1){#
+			# prop is a number#
+			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+			} else {#
+				# prop is a by column proportion#
+				bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+				bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+				}
+install.packages("msm")
+library(conSTable)
+data("Italy2006FBsheet")
+bounds
+dim(bounds)
+system.time(tab <- conSTable(muTab, n0, prop=NULL,verbose=FALSE,bounds=bounds))
+warnings()
+search()
+detach("package:conSTable")
+controlCol1 <- rbind(lowCol,uppCol)
+system.time(tab <- conSTable(muTab, n0, prop=NULL,verbose=FALSE,bounds=bounds,controlCol=controlCol))
+library("conSTable")
+> controlCol1 <- rbind(lowCol,uppCol)#
+> system.time(tab <- conSTable(muTab, n0, prop=NULL,verbose=FALSE,bounds=bounds,controlCol=controlCol))
+controlCol1 <- rbind(lowCol,uppCol)#
+ system.time(tab <- conSTable(muTab, n0, prop=NULL,verbose=FALSE,bounds=bounds,controlCol=controlCol))
+conSTable <-#
+function(muTab, rowTot, prop, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE#
+	if(transpose){#
+		muTab <- t(muTab)#
+		}#
+	colTot <- colSums(muTab)#
+	if(!is.null(prop)){#
+		controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))#
+		bounds <- array(NA,c(dim(muTab),2))#
+		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))#
+		if(!is.null(dim(prop))){#
+			# prop is a by cell proportion#
+			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+			} else if(length(prop)==1){#
+				# prop is a number#
+				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+				} else {#
+					# prop is a by column proportion#
+					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					}#
+			} #
+	.sampleTables(rowTot,muTab,bounds,controlCol=controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)##
+	}#
+.sampleTables <-#
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,...){#
+#
+	call <- match.call()#
+	if(keepArgs){#
+		argz <- lapply(2:length(call),function(i)eval(call[[i]]))#
+		names(argz) <- names(call)[2:length(names(call))]#
+		}else argz <- list()#
+	### zero rows	#
+	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)#
+	leaveOut <- -which(indZero)#
+	if(any(indZero)){#
+		if(!is.null(fixedRows)){#
+			fixed <- which((1:nrow(muTab))[leaveOut]%in%fixed)#
+			}#
+		muTab <- muTab[leaveOut,]#
+		n0 <- n0[leaveOut]#
+		if(!is.null(controlRow))controlRow <- controlRow[leaveOut,]#
+		bounds <- bounds[leaveOut,,]#
+		}#
+#
+	nr<-nrow(muTab)#
+	nc<-ncol(muTab)#
+	okTab <- list()#
+	if(is.null(controlRow)) controlRow <- do.call(rbind,lapply(1:nr,function(i){#
+		if(muTab[i,nc]==0) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+		range(bounds[i,nc,])#
+		}))#
+	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (é il caso nel quale non abbiamo idea dei boundaries)#
+	if(is.null(controlCol)) {#
+		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)#
+		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))#
+		}#
+	iter <- t <- 1L#
+	uniqueT <- 1#
+	while(t <= nIter){#
+		sim <- do.call(rbind,lapply(1:nr,function(i){#
+			if(i%in%fixed) return(fixedRows[fixed==i,])#
+			rrow <- rep(NA,nc)#
+			repeat{#
+				nc<-ncol(muTab)#
+				### VARSTOCK structural 0#
+				if(muTab[i,nc]==0){#
+					nc <- max(which(muTab[i,-nc]!=0))#
+					rrow[(1:length(rrow))>nc]<-0#
+					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev, lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)#
+#
+					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))#
+					nc<-maxTol#
+					}else{ #
+						###VARSTOCK not structural 0#
+						#if(length(rrow[-nc])!=nc-1)browser()#
+						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev, lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)#
+						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))#
+						}#
+				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,]))break#
+				}#
+				if(verbose)cat("*")#
+			return(rrow)#
+			}))#
+			#browser()#
+		if(verbose)cat("\n")#
+		#browser()#
+		totCol <- colSums(sim)#
+		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))#
+		if(all(cond)){#
+			if(t==1){#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 0#
+				}#
+			dejavu <- FALSE#
+			for(k in 1:uniqueT){#
+				if(all(sim==okTab[[k]])){#
+					attr(okTab[[k]],"mult") <- attr(okTab[[k]],"mult") + 1#
+					break#
+					}#
+				}#
+			if(!dejavu & t<nIter){#
+				uniqueT <- uniqueT+1#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 1#
+				}#
+			t <- t+1L#
+			if(verbose)print(t)#
+			}#
+		iter <- iter + 1L#
+        }#
+#
+      okTab <- okTab[1:uniqueT]#
+      bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]#
+      row.names(bestTab) <- names(indZero[!indZero])#
+      bestTab <- data.frame(bestTab)[names(indZero),]#
+      if(transpose){#
+      	bestTab <- t(bestTab)#
+      	okTab <- lapply(okTab,function(tab)t(tab))#
+      	}#
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))#
+      }#
+##################################
+### OOP: CONstrained TAble object#
+#
+setClass("conTa",representation=representation(bestTab="matrix",#
+                                              tables="list",#
+                                              iters="integer",#
+                                              objective="numeric",#
+                                              call="call",#
+                                              args="list"))#
+#
+setMethod("show",signature("conTa"),function(object){#
+	cat("Call:\n")#
+	print(object@call)#
+	cat("\nOptimal Table: ")#
+	print(object@bestTab)#
+	cat("Number of Iterations: ")#
+	cat(object@iters,"\n")#
+	cat("Objective Function: ")#
+	cat(object@objective,"\n")#
+	})
+controlCol1 <- rbind(lowCol,uppCol)#
+ system.time(tab <- conSTable(muTab, n0, prop=NULL,verbose=FALSE,bounds=bounds,controlCol=controlCol))
+controlCol1 <- rbind(lowCol,uppCol)#
+ system.time(tab <- conSTable(muTab, n0, prop=NULL,verbose=FALSE,bounds=bounds,controlCol=controlCol1))
+conSTable <-#
+function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE#
+	if(transpose){#
+		muTab <- t(muTab)#
+		}#
+	colTot <- colSums(muTab)#
+	if(is.missing(controlCol)){#
+		controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))#
+		bounds <- array(NA,c(dim(muTab),2))#
+		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))#
+		if(!is.null(dim(prop))){#
+			# prop is a by cell proportion#
+			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+			} else if(length(prop)==1){#
+				# prop is a number#
+				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+				} else {#
+					# prop is a by column proportion#
+					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					}#
+			} #
+	.sampleTables(rowTot,muTab,bounds,controlCol=controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)##
+	}#
+.sampleTables <-#
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,...){#
+#
+	call <- match.call()#
+	if(keepArgs){#
+		argz <- lapply(2:length(call),function(i)eval(call[[i]]))#
+		names(argz) <- names(call)[2:length(names(call))]#
+		}else argz <- list()#
+	### zero rows	#
+	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)#
+	leaveOut <- -which(indZero)#
+	if(any(indZero)){#
+		if(!is.null(fixedRows)){#
+			fixed <- which((1:nrow(muTab))[leaveOut]%in%fixed)#
+			}#
+		muTab <- muTab[leaveOut,]#
+		n0 <- n0[leaveOut]#
+		if(!is.null(controlRow))controlRow <- controlRow[leaveOut,]#
+		bounds <- bounds[leaveOut,,]#
+		}#
+#
+	nr<-nrow(muTab)#
+	nc<-ncol(muTab)#
+	okTab <- list()#
+	if(is.null(controlRow)) controlRow <- do.call(rbind,lapply(1:nr,function(i){#
+		if(muTab[i,nc]==0) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+		range(bounds[i,nc,])#
+		}))#
+	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (é il caso nel quale non abbiamo idea dei boundaries)#
+	if(is.null(controlCol)) {#
+		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)#
+		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))#
+		}#
+	iter <- t <- 1L#
+	uniqueT <- 1#
+	while(t <= nIter){#
+		sim <- do.call(rbind,lapply(1:nr,function(i){#
+			if(i%in%fixed) return(fixedRows[fixed==i,])#
+			rrow <- rep(NA,nc)#
+			repeat{#
+				nc<-ncol(muTab)#
+				### VARSTOCK structural 0#
+				if(muTab[i,nc]==0){#
+					nc <- max(which(muTab[i,-nc]!=0))#
+					rrow[(1:length(rrow))>nc]<-0#
+					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev, lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)#
+#
+					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))#
+					nc<-maxTol#
+					}else{ #
+						###VARSTOCK not structural 0#
+						#if(length(rrow[-nc])!=nc-1)browser()#
+						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev, lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)#
+						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))#
+						}#
+				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,]))break#
+				}#
+				if(verbose)cat("*")#
+			return(rrow)#
+			}))#
+			#browser()#
+		if(verbose)cat("\n")#
+		#browser()#
+		totCol <- colSums(sim)#
+		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))#
+		if(all(cond)){#
+			if(t==1){#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 0#
+				}#
+			dejavu <- FALSE#
+			for(k in 1:uniqueT){#
+				if(all(sim==okTab[[k]])){#
+					attr(okTab[[k]],"mult") <- attr(okTab[[k]],"mult") + 1#
+					break#
+					}#
+				}#
+			if(!dejavu & t<nIter){#
+				uniqueT <- uniqueT+1#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 1#
+				}#
+			t <- t+1L#
+			if(verbose)print(t)#
+			}#
+		iter <- iter + 1L#
+        }#
+#
+      okTab <- okTab[1:uniqueT]#
+      bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]#
+      row.names(bestTab) <- names(indZero[!indZero])#
+      bestTab <- data.frame(bestTab)[names(indZero),]#
+      if(transpose){#
+      	bestTab <- t(bestTab)#
+      	okTab <- lapply(okTab,function(tab)t(tab))#
+      	}#
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))#
+      }#
+##################################
+### OOP: CONstrained TAble object#
+#
+setClass("conTa",representation=representation(bestTab="matrix",#
+                                              tables="list",#
+                                              iters="integer",#
+                                              objective="numeric",#
+                                              call="call",#
+                                              args="list"))#
+#
+setMethod("show",signature("conTa"),function(object){#
+	cat("Call:\n")#
+	print(object@call)#
+	cat("\nOptimal Table: ")#
+	print(object@bestTab)#
+	cat("Number of Iterations: ")#
+	cat(object@iters,"\n")#
+	cat("Objective Function: ")#
+	cat(object@objective,"\n")#
+	})
+controlCol1 <- rbind(lowCol,uppCol)#
+ system.time(tab <- conSTable(muTab, n0,verbose=FALSE,bounds=bounds,controlCol=controlCol1))
+conSTable <-#
+function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE#
+	if(transpose){#
+		muTab <- t(muTab)#
+		}#
+	colTot <- colSums(muTab)#
+	if(missing(controlCol)){#
+		controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))#
+		bounds <- array(NA,c(dim(muTab),2))#
+		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))#
+		if(!is.null(dim(prop))){#
+			# prop is a by cell proportion#
+			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+			} else if(length(prop)==1){#
+				# prop is a number#
+				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+				} else {#
+					# prop is a by column proportion#
+					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					}#
+			} #
+	.sampleTables(rowTot,muTab,bounds,controlCol=controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)##
+	}#
+.sampleTables <-#
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,...){#
+#
+	call <- match.call()#
+	if(keepArgs){#
+		argz <- lapply(2:length(call),function(i)eval(call[[i]]))#
+		names(argz) <- names(call)[2:length(names(call))]#
+		}else argz <- list()#
+	### zero rows	#
+	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)#
+	leaveOut <- -which(indZero)#
+	if(any(indZero)){#
+		if(!is.null(fixedRows)){#
+			fixed <- which((1:nrow(muTab))[leaveOut]%in%fixed)#
+			}#
+		muTab <- muTab[leaveOut,]#
+		n0 <- n0[leaveOut]#
+		if(!is.null(controlRow))controlRow <- controlRow[leaveOut,]#
+		bounds <- bounds[leaveOut,,]#
+		}#
+#
+	nr<-nrow(muTab)#
+	nc<-ncol(muTab)#
+	okTab <- list()#
+	if(is.null(controlRow)) controlRow <- do.call(rbind,lapply(1:nr,function(i){#
+		if(muTab[i,nc]==0) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+		range(bounds[i,nc,])#
+		}))#
+	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (é il caso nel quale non abbiamo idea dei boundaries)#
+	if(is.null(controlCol)) {#
+		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)#
+		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))#
+		}#
+	iter <- t <- 1L#
+	uniqueT <- 1#
+	while(t <= nIter){#
+		sim <- do.call(rbind,lapply(1:nr,function(i){#
+			if(i%in%fixed) return(fixedRows[fixed==i,])#
+			rrow <- rep(NA,nc)#
+			repeat{#
+				nc<-ncol(muTab)#
+				### VARSTOCK structural 0#
+				if(muTab[i,nc]==0){#
+					nc <- max(which(muTab[i,-nc]!=0))#
+					rrow[(1:length(rrow))>nc]<-0#
+					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev, lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)#
+#
+					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))#
+					nc<-maxTol#
+					}else{ #
+						###VARSTOCK not structural 0#
+						#if(length(rrow[-nc])!=nc-1)browser()#
+						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev, lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)#
+						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))#
+						}#
+				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,]))break#
+				}#
+				if(verbose)cat("*")#
+			return(rrow)#
+			}))#
+			#browser()#
+		if(verbose)cat("\n")#
+		#browser()#
+		totCol <- colSums(sim)#
+		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))#
+		if(all(cond)){#
+			if(t==1){#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 0#
+				}#
+			dejavu <- FALSE#
+			for(k in 1:uniqueT){#
+				if(all(sim==okTab[[k]])){#
+					attr(okTab[[k]],"mult") <- attr(okTab[[k]],"mult") + 1#
+					break#
+					}#
+				}#
+			if(!dejavu & t<nIter){#
+				uniqueT <- uniqueT+1#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 1#
+				}#
+			t <- t+1L#
+			if(verbose)print(t)#
+			}#
+		iter <- iter + 1L#
+        }#
+#
+      okTab <- okTab[1:uniqueT]#
+      bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]#
+      row.names(bestTab) <- names(indZero[!indZero])#
+      bestTab <- data.frame(bestTab)[names(indZero),]#
+      if(transpose){#
+      	bestTab <- t(bestTab)#
+      	okTab <- lapply(okTab,function(tab)t(tab))#
+      	}#
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))#
+      }#
+##################################
+### OOP: CONstrained TAble object#
+#
+setClass("conTa",representation=representation(bestTab="matrix",#
+                                              tables="list",#
+                                              iters="integer",#
+                                              objective="numeric",#
+                                              call="call",#
+                                              args="list"))#
+#
+setMethod("show",signature("conTa"),function(object){#
+	cat("Call:\n")#
+	print(object@call)#
+	cat("\nOptimal Table: ")#
+	print(object@bestTab)#
+	cat("Number of Iterations: ")#
+	cat(object@iters,"\n")#
+	cat("Objective Function: ")#
+	cat(object@objective,"\n")#
+	})
+controlCol1 <- rbind(lowCol,uppCol)#
+ system.time(tab <- conSTable(muTab, n0,verbose=FALSE,bounds=bounds,controlCol=controlCol1))
+dim(controlCol1)
+dim(muTab)
+conSTable <-#
+function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE#
+	if(transpose){#
+		muTab <- t(muTab)#
+		}#
+	colTot <- colSums(muTab)#
+	if(missing(controlCol)){#
+		controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))#
+		bounds <- array(NA,c(dim(muTab),2))#
+		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))#
+		if(!is.null(dim(prop))){#
+			# prop is a by cell proportion#
+			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+			} else if(length(prop)==1){#
+				# prop is a number#
+				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)#
+				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)#
+				} else {#
+					# prop is a by column proportion#
+					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))#
+					}#
+			} #
+	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)##
+	}#
+.sampleTables <-#
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,...){#
+#
+	call <- match.call()#
+	if(keepArgs){#
+		argz <- lapply(2:length(call),function(i)eval(call[[i]]))#
+		names(argz) <- names(call)[2:length(names(call))]#
+		}else argz <- list()#
+	### zero rows	#
+	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)#
+	leaveOut <- -which(indZero)#
+	if(any(indZero)){#
+		if(!is.null(fixedRows)){#
+			fixed <- which((1:nrow(muTab))[leaveOut]%in%fixed)#
+			}#
+		muTab <- muTab[leaveOut,]#
+		n0 <- n0[leaveOut]#
+		if(!is.null(controlRow))controlRow <- controlRow[leaveOut,]#
+		bounds <- bounds[leaveOut,,]#
+		}#
+#
+	nr<-nrow(muTab)#
+	nc<-ncol(muTab)#
+	okTab <- list()#
+	if(is.null(controlRow)) controlRow <- do.call(rbind,lapply(1:nr,function(i){#
+		if(muTab[i,nc]==0) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+		range(bounds[i,nc,])#
+		}))#
+	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (é il caso nel quale non abbiamo idea dei boundaries)#
+	if(is.null(controlCol)) {#
+		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)#
+		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))#
+		}#
+	iter <- t <- 1L#
+	uniqueT <- 1#
+	while(t <= nIter){#
+		sim <- do.call(rbind,lapply(1:nr,function(i){#
+			if(i%in%fixed) return(fixedRows[fixed==i,])#
+			rrow <- rep(NA,nc)#
+			repeat{#
+				nc<-ncol(muTab)#
+				### VARSTOCK structural 0#
+				if(muTab[i,nc]==0){#
+					nc <- max(which(muTab[i,-nc]!=0))#
+					rrow[(1:length(rrow))>nc]<-0#
+					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))#
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev, lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)#
+#
+					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))#
+					nc<-maxTol#
+					}else{ #
+						###VARSTOCK not structural 0#
+						#if(length(rrow[-nc])!=nc-1)browser()#
+						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev, lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)#
+						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))#
+						}#
+				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,]))break#
+				}#
+				if(verbose)cat("*")#
+			return(rrow)#
+			}))#
+			#browser()#
+		if(verbose)cat("\n")#
+		#browser()#
+		totCol <- colSums(sim)#
+		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))#
+		if(all(cond)){#
+			if(t==1){#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 0#
+				}#
+			dejavu <- FALSE#
+			for(k in 1:uniqueT){#
+				if(all(sim==okTab[[k]])){#
+					attr(okTab[[k]],"mult") <- attr(okTab[[k]],"mult") + 1#
+					break#
+					}#
+				}#
+			if(!dejavu & t<nIter){#
+				uniqueT <- uniqueT+1#
+				okTab[[uniqueT]] <- sim#
+				attr(okTab[[uniqueT]],"mult") <- 1#
+				}#
+			t <- t+1L#
+			if(verbose)print(t)#
+			}#
+		iter <- iter + 1L#
+        }#
+#
+      okTab <- okTab[1:uniqueT]#
+      bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]#
+      row.names(bestTab) <- names(indZero[!indZero])#
+      bestTab <- data.frame(bestTab)[names(indZero),]#
+      if(transpose){#
+      	bestTab <- t(bestTab)#
+      	okTab <- lapply(okTab,function(tab)t(tab))#
+      	}#
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))#
+      }#
+##################################
+### OOP: CONstrained TAble object#
+#
+setClass("conTa",representation=representation(bestTab="matrix",#
+                                              tables="list",#
+                                              iters="integer",#
+                                              objective="numeric",#
+                                              call="call",#
+                                              args="list"))#
+#
+setMethod("show",signature("conTa"),function(object){#
+	cat("Call:\n")#
+	print(object@call)#
+	cat("\nOptimal Table: ")#
+	print(object@bestTab)#
+	cat("Number of Iterations: ")#
+	cat(object@iters,"\n")#
+	cat("Objective Function: ")#
+	cat(object@objective,"\n")#
+	})
+controlCol1 <- rbind(lowCol,uppCol)#
+ system.time(tab <- conSTable(muTab, n0,verbose=FALSE,bounds=bounds,controlCol=controlCol1))
+install.packages("devtools")#
+#
+library(devtools)
+dev_mode(on=T)#
+#
+install_github("conSTable",username="mrpozzi",rep="userfriendly")
+dev_mode(on=T)#
+#
+install_github("conSTable",username="mrpozzi")
+dev_mode(on=T)#
+#
+install_github("conSTable",username="mrpozzi",ref="userfriendly")
+dev_mode(on=T)
+rm(list=ls())#
+gc()#
+#install.packages("conSTable_0.3.tar.gz",type="source",repos=NULL)#
+library(conSTable)#
+FBS <- list(#
+"Congo"=list("2008"=list(data=list(Cereals=c(458,33,0,1,34,0),Roots_Tubers=c(1981,0,0,0,223,0),Vegetables=c(45,0,0,0,9,0),Fruit_Nuts=c(169,0,0,0,28,0),Pulses=c(34,0,0,1,2,0),Stim_Spices=c(1,0,0,0,0,0),Sugar=c(280,0,0,0,8,0),Meat_Fish=c(135,0,0,0,21,0),Dairy_Eggs=c(31,0,0,0,1,0),VegOils_AnimalFats=c(562,0,0,0,37,0),Alcoholic_bev=c(9,0,0,0,0,0)),row_Tot=c(526.4,2204.0,54.8,197.0,37.0,0.9,287.8,155.3,31.5,599.4,9.3)),#
+"2009"=list(data=list(Cereals=c(538,32,0,1,40,0),Roots_Tubers=c(1922,0,0,0,216,0),Vegetables=c(45,0,0,0,9,0),Fruit_Nuts=c(160,0,0,0,27,0),Pulses=c(32,0,0,1,2,0),Stim_Spices=c(1,0,0,0,0,0),Sugar=c(91,0,0,0,2,0),Meat_Fish=c(157,0,0,0,24,0),Dairy_Eggs=c(31,0,0,0,1,0),VegOils_AnimalFats=c(612,0,0,0,41,0),Alcoholic_bev=c(9,0,0,0,0,0)),row_Tot=c(610.0,2138.6,54.3,186.7,34.7,0.9,93.4,181.1,31.6,652.7,9.0)),#
+"2010"=list(data=list(Cereals=c(496,34,0,1,37,0),Roots_Tubers=c(1867,0,0,0,210,0),Vegetables=c(46,0,0,0,10,0),Fruit_Nuts=c(158,0,0,0,27,0),Pulses=c(29,0,0,1,1,0),Stim_Spices=c(0,0,0,0,0,0),Sugar=c(61,0,0,0,2,0),Meat_Fish=c(116,0,0,0,18,0),Dairy_Eggs=c(33,0,0,0,1,0),VegOils_AnimalFats=c(615,0,0,0,41,0),Alcoholic_bev=c(8,0,0,0,0,0)),row_Tot=c(567.2,2077.5,55.1,184.8,31.8,0.3,63.2,134.1,33.8,656.5,7.6))),#
+#
+"India"=list(#
+"2008"=list(data=list(Cereals=c(1210,352,3,53,89,0),Roots_Tubers=c(101,0,0,8,5,0),Vegetables=c(93,0,0,0,12,0),Fruit_Nuts=c(134,0,0,0,14,0),Pulses=c(112,0,0,5,4,0),Stim_Spices=c(37,0,0,0,0,0),Sugar=c(234,0,0,15,4,0),Meat_Fish=c(17,0,0,0,1,0),Dairy_Eggs=c(218,0,0,0,3,0),VegOils_AnimalFats=c(245,0,2,0,13,0),Alcoholic_bev=c(0,0,0,0,0,0)),row_Tot=c(1707.1,114.5,104.2,147.8,122.1,37.0,252.4,18.2,221.3,260.5,0.1)),#
+"2009"=list(data=list(Cereals=c(1203,356,1,52,89,0),Roots_Tubers=c(100,0,0,8,5,0),Vegetables=c(91,0,0,0,11,0),Fruit_Nuts=c(131,0,0,0,14,0),Pulses=c(122,0,0,5,5,0),Stim_Spices=c(23,0,0,0,0,0),Sugar=c(313,0,0,15,5,0),Meat_Fish=c(17,0,0,0,1,0),Dairy_Eggs=c(216,0,0,0,3,0),VegOils_AnimalFats=c(280,0,3,0,15,0),Alcoholic_bev=c(0,0,0,0,0,0)),row_Tot=c(1702.2,113.2,102.5,145.1,131.9,23.4,332.6,17.8,219.0,297.4,0.0)),#
+"2010"=list(data=list(Cereals=c(1176,364,2,52,88,0),Roots_Tubers=c(99,0,0,8,5,0),Vegetables=c(90,0,0,0,11,0),Fruit_Nuts=c(127,0,0,0,13,0),Pulses=c(115,0,0,5,4,0),Stim_Spices=c(23,0,0,0,0,0),Sugar=c(264,0,0,14,4,0),Meat_Fish=c(16,0,0,0,1,0),Dairy_Eggs=c(214,0,0,0,3,0),VegOils_AnimalFats=c(277,0,4,0,15,0),Alcoholic_bev=c(0,0,0,0,0,0)),row_Tot=c(1680.3,111.8,101.7,140.5,124.4,23.3,282.6,17.2,216.6,296.7,0.1))),#
+#
+"USA"=list(#
+"2008"=list(data=list(Cereals=c(4721,1980,2913,100,178,0),Roots_Tubers=c(148,0,0,9,5,0),Vegetables=c(121,0,0,0,3,0),Fruit_Nuts=c(238,0,0,0,4,0),Pulses=c(29,0,0,1,0,0),Stim_Spices=c(22,0,0,0,0,0),Sugar=c(1028,0,0,29,11,0),Meat_Fish=c(599,0,0,0,10,0),Dairy_Eggs=c(537,0,0,0,2,0),VegOils_AnimalFats=c(756,0,77,0,15,0),Alcoholic_bev=c(21,0,0,0,0,0)),row_Tot=c(9891.3,161.9,123.7,241.6,31.0,22.4,1068.0,609.4,539.0,847.5,20.9)),#
+"2009"=list(data=list(Cereals=c(4627,1931,3604,99,188,0),Roots_Tubers=c(147,0,0,9,5,0),Vegetables=c(122,0,0,0,3,0),Fruit_Nuts=c(235,0,0,0,4,0),Pulses=c(28,0,0,1,0,0),Stim_Spices=c(27,0,0,0,0,0),Sugar=c(1013,0,0,29,11,0),Meat_Fish=c(604,0,0,0,10,0),Dairy_Eggs=c(538,0,0,0,2,0),VegOils_AnimalFats=c(756,0,67,0,14,0),Alcoholic_bev=c(26,0,0,0,0,0)),row_Tot=c(10448.4,161.7,124.5,239.4,30.1,27.2,1052.3,613.8,540.1,837.4,26.3)),#
+"2010"=list(data=list(Cereals=c(4004,1904,3905,98,181,0),Roots_Tubers=c(145,0,0,9,5,0),Vegetables=c(122,0,0,0,3,0),Fruit_Nuts=c(236,0,0,0,4,0),Pulses=c(25,0,0,1,0,0),Stim_Spices=c(26,0,0,0,0,0),Sugar=c(967,0,0,29,10,0),Meat_Fish=c(594,0,0,0,10,0),Dairy_Eggs=c(522,0,0,0,2,0),VegOils_AnimalFats=c(678,0,101,0,14,0),Alcoholic_bev=c(34,0,0,0,0,0)),row_Tot=c(10091.9,159.2,124.3,240.1,26.5,26.3,1006.3,604.3,524.0,792.7,34.3))))
+Country <- "USA"#
+year <- 2010
+fbs <- FBS[[Country]][[as.character(year)]]#
+		mu_Tab <- do.call(rbind,lapply(names(fbs$data),function(name)fbs$data[[name]]))#
+		dimnames(mu_Tab) <- list(names(fbs$data),c("Food","Feed","OtherUse","Seed","Losses","StVar"))
+row_Tot <- fbs$row_Tot
+tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, prop=60/100,nIter = 100,objFun = function(tab){-colSums(tab)[6]},...)
+tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, prop=60/100,nIter = 100,objFun = function(tab){-colSums(tab)[6]})
+dev_mode(on=F)
+search()
+detach("package:conSTable")
+library(conSTable)
+tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, prop=60/100,nIter = 100,objFun = function(tab){-colSums(tab)[6]})
+rm(list=ls())
+rm(list=ls())#
+gc()#
+#install.packages("conSTable_0.3.tar.gz",type="source",repos=NULL)#
+library(conSTable)#
+FBS <- list(#
+"Congo"=list("2008"=list(data=list(Cereals=c(458,33,0,1,34,0),Roots_Tubers=c(1981,0,0,0,223,0),Vegetables=c(45,0,0,0,9,0),Fruit_Nuts=c(169,0,0,0,28,0),Pulses=c(34,0,0,1,2,0),Stim_Spices=c(1,0,0,0,0,0),Sugar=c(280,0,0,0,8,0),Meat_Fish=c(135,0,0,0,21,0),Dairy_Eggs=c(31,0,0,0,1,0),VegOils_AnimalFats=c(562,0,0,0,37,0),Alcoholic_bev=c(9,0,0,0,0,0)),row_Tot=c(526.4,2204.0,54.8,197.0,37.0,0.9,287.8,155.3,31.5,599.4,9.3)),#
+"2009"=list(data=list(Cereals=c(538,32,0,1,40,0),Roots_Tubers=c(1922,0,0,0,216,0),Vegetables=c(45,0,0,0,9,0),Fruit_Nuts=c(160,0,0,0,27,0),Pulses=c(32,0,0,1,2,0),Stim_Spices=c(1,0,0,0,0,0),Sugar=c(91,0,0,0,2,0),Meat_Fish=c(157,0,0,0,24,0),Dairy_Eggs=c(31,0,0,0,1,0),VegOils_AnimalFats=c(612,0,0,0,41,0),Alcoholic_bev=c(9,0,0,0,0,0)),row_Tot=c(610.0,2138.6,54.3,186.7,34.7,0.9,93.4,181.1,31.6,652.7,9.0)),#
+"2010"=list(data=list(Cereals=c(496,34,0,1,37,0),Roots_Tubers=c(1867,0,0,0,210,0),Vegetables=c(46,0,0,0,10,0),Fruit_Nuts=c(158,0,0,0,27,0),Pulses=c(29,0,0,1,1,0),Stim_Spices=c(0,0,0,0,0,0),Sugar=c(61,0,0,0,2,0),Meat_Fish=c(116,0,0,0,18,0),Dairy_Eggs=c(33,0,0,0,1,0),VegOils_AnimalFats=c(615,0,0,0,41,0),Alcoholic_bev=c(8,0,0,0,0,0)),row_Tot=c(567.2,2077.5,55.1,184.8,31.8,0.3,63.2,134.1,33.8,656.5,7.6))),#
+#
+"India"=list(#
+"2008"=list(data=list(Cereals=c(1210,352,3,53,89,0),Roots_Tubers=c(101,0,0,8,5,0),Vegetables=c(93,0,0,0,12,0),Fruit_Nuts=c(134,0,0,0,14,0),Pulses=c(112,0,0,5,4,0),Stim_Spices=c(37,0,0,0,0,0),Sugar=c(234,0,0,15,4,0),Meat_Fish=c(17,0,0,0,1,0),Dairy_Eggs=c(218,0,0,0,3,0),VegOils_AnimalFats=c(245,0,2,0,13,0),Alcoholic_bev=c(0,0,0,0,0,0)),row_Tot=c(1707.1,114.5,104.2,147.8,122.1,37.0,252.4,18.2,221.3,260.5,0.1)),#
+"2009"=list(data=list(Cereals=c(1203,356,1,52,89,0),Roots_Tubers=c(100,0,0,8,5,0),Vegetables=c(91,0,0,0,11,0),Fruit_Nuts=c(131,0,0,0,14,0),Pulses=c(122,0,0,5,5,0),Stim_Spices=c(23,0,0,0,0,0),Sugar=c(313,0,0,15,5,0),Meat_Fish=c(17,0,0,0,1,0),Dairy_Eggs=c(216,0,0,0,3,0),VegOils_AnimalFats=c(280,0,3,0,15,0),Alcoholic_bev=c(0,0,0,0,0,0)),row_Tot=c(1702.2,113.2,102.5,145.1,131.9,23.4,332.6,17.8,219.0,297.4,0.0)),#
+"2010"=list(data=list(Cereals=c(1176,364,2,52,88,0),Roots_Tubers=c(99,0,0,8,5,0),Vegetables=c(90,0,0,0,11,0),Fruit_Nuts=c(127,0,0,0,13,0),Pulses=c(115,0,0,5,4,0),Stim_Spices=c(23,0,0,0,0,0),Sugar=c(264,0,0,14,4,0),Meat_Fish=c(16,0,0,0,1,0),Dairy_Eggs=c(214,0,0,0,3,0),VegOils_AnimalFats=c(277,0,4,0,15,0),Alcoholic_bev=c(0,0,0,0,0,0)),row_Tot=c(1680.3,111.8,101.7,140.5,124.4,23.3,282.6,17.2,216.6,296.7,0.1))),#
+#
+"USA"=list(#
+"2008"=list(data=list(Cereals=c(4721,1980,2913,100,178,0),Roots_Tubers=c(148,0,0,9,5,0),Vegetables=c(121,0,0,0,3,0),Fruit_Nuts=c(238,0,0,0,4,0),Pulses=c(29,0,0,1,0,0),Stim_Spices=c(22,0,0,0,0,0),Sugar=c(1028,0,0,29,11,0),Meat_Fish=c(599,0,0,0,10,0),Dairy_Eggs=c(537,0,0,0,2,0),VegOils_AnimalFats=c(756,0,77,0,15,0),Alcoholic_bev=c(21,0,0,0,0,0)),row_Tot=c(9891.3,161.9,123.7,241.6,31.0,22.4,1068.0,609.4,539.0,847.5,20.9)),#
+"2009"=list(data=list(Cereals=c(4627,1931,3604,99,188,0),Roots_Tubers=c(147,0,0,9,5,0),Vegetables=c(122,0,0,0,3,0),Fruit_Nuts=c(235,0,0,0,4,0),Pulses=c(28,0,0,1,0,0),Stim_Spices=c(27,0,0,0,0,0),Sugar=c(1013,0,0,29,11,0),Meat_Fish=c(604,0,0,0,10,0),Dairy_Eggs=c(538,0,0,0,2,0),VegOils_AnimalFats=c(756,0,67,0,14,0),Alcoholic_bev=c(26,0,0,0,0,0)),row_Tot=c(10448.4,161.7,124.5,239.4,30.1,27.2,1052.3,613.8,540.1,837.4,26.3)),#
+"2010"=list(data=list(Cereals=c(4004,1904,3905,98,181,0),Roots_Tubers=c(145,0,0,9,5,0),Vegetables=c(122,0,0,0,3,0),Fruit_Nuts=c(236,0,0,0,4,0),Pulses=c(25,0,0,1,0,0),Stim_Spices=c(26,0,0,0,0,0),Sugar=c(967,0,0,29,10,0),Meat_Fish=c(594,0,0,0,10,0),Dairy_Eggs=c(522,0,0,0,2,0),VegOils_AnimalFats=c(678,0,101,0,14,0),Alcoholic_bev=c(34,0,0,0,0,0)),row_Tot=c(10091.9,159.2,124.3,240.1,26.5,26.3,1006.3,604.3,524.0,792.7,34.3))))
+Country <- "USA"
+year <- 2010
+fbs <- FBS[[Country]][[as.character(year)]]
+mu_Tab <- do.call(rbind,lapply(names(fbs$data),function(name)fbs$data[[name]]))
+dimnames(mu_Tab) <- list(names(fbs$data),c("Food","Feed","OtherUse","Seed","Losses","StVar"))
+row_Tot <- fbs$row_Tot
+tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, prop=60/100,nIter = 100,objFun = function(tab){-colSums(tab)[6]})
