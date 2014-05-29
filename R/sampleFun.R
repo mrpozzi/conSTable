@@ -7,8 +7,12 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 	
 	colTot <- colSums(muTab)
 	
+
+  # NB: questo è il caso in cui l'user imposta sia prop diverso da NULL che shift > 0
+  if(!is.null(prop) & !all(shift==0)) stop("Either prop between 0 and 1 and shift 0 or prop NULL and shift > 0")
+  
 	if(!is.null(prop)) {
-		if(any(prop > 1)) stop("prop must be a number between 0 and 1")
+		if(any(prop > 1)) stop("prop must be a number/vector with value/values between 0 and 1")
 		} else if(all(shift==0)) stop("When prop is NULL shift must be > 0")
 	
 	if(!(is.null(prop) & all(shift==0))){
@@ -96,7 +100,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		range(bounds[i,nc,])
 		}))
 		
-	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (é il caso nel quale non abbiamo idea dei boundaries)
+	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (è il caso nel quale non abbiamo idea dei boundaries)
 	if(is.null(controlCol)) {
 		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)
 		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))
