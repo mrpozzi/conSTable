@@ -1,5 +1,5 @@
 conSTable <-
-function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
 	
 	if(transpose){
 		muTab <- t(muTab)
@@ -7,27 +7,55 @@ function(muTab, rowTot, prop, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE
 	
 	colTot <- colSums(muTab)
 	
-	if(!is.null(prop)){
-		if(missing(controlCol)) controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
+  # NB: questo è il caso in cui l'user imposta sia prop diverso da NULL che shift > 0
+  if(!is.null(prop) & !all(shift==0)) stop("Either prop between 0 and 1 and shift 0 or prop NULL and shift > 0")
+  
+	if(!is.null(prop)) {
+		if(any(prop > 1)) stop("prop must be a number/vector with value/values between 0 and 1")
+		} else if(all(shift==0)) stop("When prop is NULL shift must be > 0")
+	
+	if(!(is.null(prop) & all(shift==0))){
+		
 		bounds <- array(NA,c(dim(muTab),2))
 		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
-		if(!is.null(dim(prop))){
-			# prop is a by cell proportion
-			bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
-			bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
-			} else if(length(prop)==1){
+		
+		if(!is.null(prop)){
+			
+			if(missing(controlCol)) controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
+			
+			if(!is.null(dim(prop))|(length(prop)==1)){
+				# prop is a by cell proportion
 				# prop is a number
-				bounds[,,"Lower"] <- as.matrix((1-prop*sign(muTab))*muTab)
-				bounds[,,"Upper"] <- as.matrix((1+prop*sign(muTab))*muTab)
+				shift <- prop*sign(muTab)*muTab
 				} else {
 					# prop is a by column proportion
-					bounds[,,"Lower"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1-prop[j]*sign(muTab[,j]))*muTab[,j] )))
-					bounds[,,"Upper"] <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j)(1+prop[j]*sign(muTab[,j]))*muTab[,j] )))
+					shift <- as.matrix(do.call(cbind,lapply(1:length(prop),function(j) prop[j]*sign(muTab[,j])*muTab[,j] )))
 					}
-			} 
+				
+				} else {
+					
+					if(missing(controlCol)) {
+						if(is.null(dim(shift))){
+							controlCol <- rbind(colTot-shift,colTot+shift)
+							} else {
+								colShift <- apply(shift,1,max)
+								controlCol <- rbind(colTot-colShift,colTot+colShift)
+								}
+						}
+					
+					if(is.null(dim(shift))&(length(shift)!=1)){
+						# by column shift
+						shift <- as.matrix(do.call(rbind,lapply(1:nrow(muTab),function(i) shift)))
+						}
+					}
+			
+			bounds[,,"Lower"] <- as.matrix(muTab - shift)
+			bounds[,,"Upper"] <- as.matrix(muTab + shift)
+		
+		 }
 	
-	.sampleTables(rowTot,muTab,bounds,controlCol,verbose=verbose,transpose=transpose,fixedRows=fixedRows, fixed=fixed,...)#
-	
+	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,...)#
+
 	}
 
 
@@ -42,9 +70,13 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		argz <- lapply(2:length(call),function(i)eval(call[[i]]))
 		names(argz) <- names(call)[2:length(names(call))]
 		}else argz <- list()
-	
+		
 	### zero rows	
-	indZero <- apply(muTab,1,function(x)all(x==0))|(n0==0)
+	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
+	names(indZero) <- rownames(muTab)
+	if(is.null(names(indZero))){
+		names(indZero) <- 1:length(indZero)
+		}
 	leaveOut <- -which(indZero)
 	if(any(indZero)){
 		if(!is.null(fixedRows)){
@@ -58,15 +90,16 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 
 	nr<-nrow(muTab)
 	nc<-ncol(muTab)
+	if(length(sdev==1)) sdev <- rep(sdev,nc)
 	
 	okTab <- list()
 	
 	if(is.null(controlRow)) controlRow <- do.call(rbind,lapply(1:nr,function(i){
-		if(muTab[i,nc]==0) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
+		if(all(c(muTab[i,nc],bounds[i,nc,])==0)) nc <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
 		range(bounds[i,nc,])
 		}))
 		
-	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (é il caso nel quale non abbiamo idea dei boundaries)
+	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (è il caso nel quale non abbiamo idea dei boundaries)
 	if(is.null(controlCol)) {
 		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)
 		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))
@@ -87,13 +120,13 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				nc<-ncol(muTab)
 				
 				### VARSTOCK structural 0
-				if(muTab[i,nc]==0){
+				if(all(c(muTab[i,nc],bounds[i,nc,])==0)){
 					nc <- max(which(muTab[i,-nc]!=0))
 					rrow[(1:length(rrow))>nc]<-0
 					
 					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
 					
-					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev, lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)
 
 					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
@@ -101,7 +134,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						###VARSTOCK not structural 0
 						
 						#if(length(rrow[-nc])!=nc-1)browser()
-						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev, lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)
+						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)
 						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))
 						
 						}
@@ -144,17 +177,21 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}
 		iter <- iter + 1L
         }
-
+      
       okTab <- okTab[1:uniqueT]
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
       bestTab <- data.frame(bestTab)[names(indZero),]
-      
+      ## Add name when indZero (otherwise NA) #Marco
+      row.names(bestTab) <- names(indZero)
+      bestTab[indZero,] <- 0
+      ## Add colon names
+      colnames(bestTab) <- colnames(muTab)
       if(transpose){
       	bestTab <- t(bestTab)
       	okTab <- lapply(okTab,function(tab)t(tab))
       	}
-      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=objFun(bestTab),call=call,args=argz))
+      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
       }
 
@@ -178,4 +215,17 @@ setMethod("show",signature("conTa"),function(object){
 	cat(object@iters,"\n")
 	cat("Objective Function: ")
 	cat(object@objective,"\n")
+	})
+
+
+setMethod("print",signature("conTa"),function(x,...){
+	cat("Call:\n")
+	print(object@call)
+	cat("\nOptimal Table: ")
+	print(object@bestTab)
+	cat("Number of Iterations: ")
+	cat(object@iters,"\n")
+	cat("Objective Function: ")
+	cat(object@objective,"\n")
+	if(!missing(file)) write.csv(object@bestTab,...)
 	})
