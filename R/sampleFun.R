@@ -52,6 +52,8 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 			
 			bounds[,,"Lower"] <- as.matrix(muTab - shift)
 			bounds[,,"Upper"] <- as.matrix(muTab + shift)
+			
+			bounds[,,"Lower"][is.na(muTab)] <- bounds[,,"Upper"][is.na(muTab)] <- muTab[is.na(muTab)] <- 0
 		
 		 }
 	
