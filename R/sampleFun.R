@@ -5,8 +5,10 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 		muTab <- t(muTab)
 		}
 	
-	colTot <- colSums(muTab)
+	# Need to remove NA in colSums
+	colTot <- colSums(muTab, na.rm=T)
 	
+
   # NB: questo è il caso in cui l'user imposta sia prop diverso da NULL che shift > 0
   if(!is.null(prop) & !all(shift==0)) stop("Either prop between 0 and 1 and shift 0 or prop NULL and shift > 0")
   
@@ -51,6 +53,10 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 			
 			bounds[,,"Lower"] <- as.matrix(muTab - shift)
 			bounds[,,"Upper"] <- as.matrix(muTab + shift)
+			
+			# We need before the setup the bounds to zero, and then muTab
+			bounds[,,"Lower"][is.na(muTab)] <- bounds[,,"Upper"][is.na(muTab)] <- 0
+			muTab[is.na(muTab)] <- 0
 		
 		 }
 	
