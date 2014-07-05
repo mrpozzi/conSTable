@@ -1,25 +1,32 @@
 readFBS <- function(file){
 	rawData <- scan(file, what="", sep="\n",quote="\"")
+	header <- rawData[1]; rawData <- rawData[-1]
+	header  <- unlist(strsplit(header, ","))
 	rawData <- strsplit(rawData, ",")
+	rawData <- rawData[sapply(rawData,length)!=1]
 	
 	countries <- sapply(rawData, `[`,2)
-	
 	countryData <- tapply(rawData, countries,function(country){
 		
 		years <- sapply(country, `[`,4)
 		yearData <- tapply(country,years,function(year){
 			nm <- sapply(year,`[`,3)
-			stuff <- sapply(year,function(y)as.numeric(y)[5:length(y)])
-			colnames(stuff) <- nm
-			stuff
+			fbs <- t(sapply(year,function(y) as.numeric(y[-(1:4)])))
+			rownames(fbs) <- nm
+			colnames(fbs) <- header[-(1:4)]
+			fbs
 			})
+		
 		yearData
+		
 		})
-	
+		
 	countryData
 	
 	}
 
 
-# file <- "ContTab (2).csv"
-# FBSdata <- readFBS(file)
+
+# file <- "ContTab.csv"
+# file <- "ContTabClean.csv"
+ # FBSdata <- readFBS(file)
