@@ -7,6 +7,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 	
 	# Need to remove NA in colSums
 	colTot <- colSums(muTab, na.rm=T)
+	colMu <- colMeans(muTab, na.rm=T)
 	
 
   # NB: questo è il caso in cui l'user imposta sia prop diverso da NULL che shift > 0
@@ -41,7 +42,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 							controlCol <- rbind(colTot-shift,colTot+shift)
 							} else {
 								colShift <- apply(shift,2,max)
-								controlCol <- rbind(colTot-colShift,colTot+colShift)
+								controlCol <- rbind(colTot-nrow(muTab)*colShift,colTot+nrow(muTab)*colShift)
 								}
 						}
 					
@@ -117,7 +118,6 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	while(t <= nIter){
 		
 		sim <- do.call(rbind,lapply(1:nr,function(i){
-			cat(i)
 			
 			if(i%in%fixed) return(fixedRows[fixed==i,])
 			
@@ -146,7 +146,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						
 						}
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
-				
+				# browser()
 				}
 				if(verbose)cat("*")
 			return(rrow)
@@ -154,7 +154,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}))
 			
 		if(verbose)cat("\n")
-		#browser()
+		# browser()
 		totCol <- colSums(sim)
 		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))
 		
