@@ -54,7 +54,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 			bounds[,,"Lower"] <- as.matrix(muTab - shift)
 			bounds[,,"Upper"] <- as.matrix(muTab + shift)
 			
-			# We need before the setup the bounds to zero, and then muTab
+			# We need to set the bounds to zero, and then muTab
 			bounds[,,"Lower"][is.na(muTab)] <- bounds[,,"Upper"][is.na(muTab)] <- 0
 			muTab[is.na(muTab)] <- 0
 		
@@ -144,7 +144,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))
 						
 						}
-				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,]))break
+				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				
 				}
 				if(verbose)cat("*")
@@ -188,6 +188,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
       bestTab <- data.frame(bestTab)[names(indZero),]
+      
       ## Add name when indZero (otherwise NA) #Marco
       row.names(bestTab) <- names(indZero)
       bestTab[indZero,] <- 0

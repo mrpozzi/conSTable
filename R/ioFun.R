@@ -1,4 +1,4 @@
-readFBS <- function(file){
+readFBS <- function(file,whichCols=c("Imports.primary","Exports.primary","Domestic.supply","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
 	rawData <- scan(file, what="", sep="\n",quote="\"")
 	header <- rawData[1]; rawData <- rawData[-1]
 	header  <- unlist(strsplit(header, ","))
@@ -14,7 +14,7 @@ readFBS <- function(file){
 			fbs <- t(sapply(year,function(y) as.numeric(y[-(1:4)])))
 			rownames(fbs) <- nm
 			colnames(fbs) <- header[-(1:4)]
-			fbs
+			list(data=fbs[, whichCols],row_Tot=fbs[,fixed],sd=fbs[,sdCols])
 			})
 		
 		yearData
@@ -25,8 +25,3 @@ readFBS <- function(file){
 	
 	}
 
-
-
-# file <- "ContTab.csv"
-# file <- "ContTabClean.csv"
- # FBSdata <- readFBS(file)
