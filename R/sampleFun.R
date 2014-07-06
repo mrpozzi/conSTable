@@ -109,7 +109,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (è il caso nel quale non abbiamo idea dei boundaries)
 	if(is.null(controlCol)) {
 		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)
-		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(round(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2)))))))
+		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2))))))
 		}
 	
 	iter <- t <- 1L
@@ -133,7 +133,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					
 					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
 					
-					rrow[-c(maxTol,(nc+1):length(rrow))] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]),0)
+					rrow[-c(maxTol,(nc+1):length(rrow))] <- rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2])
 
 					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
@@ -141,7 +141,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						###VARSTOCK not structural 0
 						# browser()
 						#if(length(rrow[-nc])!=nc-1)browser()
-						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)
+						rrow[-nc] <- rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2])
 						rrow[nc] <- -n0[i]+sum(rrow[-nc])
 						
 						}

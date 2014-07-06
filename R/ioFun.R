@@ -1,9 +1,16 @@
-readFBS <- function(file,whichCols=c("Imports.primary","Exports.primary","Domestic.supply","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
+readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Domestic.supply","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
 	rawData <- scan(file, what="", sep="\n",quote="\"")
 	header <- rawData[1]; rawData <- rawData[-1]
 	header  <- unlist(strsplit(header, ","))
 	rawData <- strsplit(rawData, ",")
 	rawData <- rawData[sapply(rawData,length)!=1]
+	
+	structZero <- NULL
+	if(!is.null(file0)){
+		structZero <- read.csv(file0, row.names=1)!="num"
+	}
+	
+	
 	
 	countries <- sapply(rawData, `[`,2)
 	countryData <- tapply(rawData, countries,function(country){
@@ -16,6 +23,12 @@ readFBS <- function(file,whichCols=c("Imports.primary","Exports.primary","Domest
 			colnames(fbs) <- header[-(1:4)]
 			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]
+			
+			if(!is.null(structZero)){
+				browser()
+				fbs[, whichCols[-(1:2)]][fbs[, whichCols[-(1:2)]]==0 & structZero[rownames(fbs),]] <- NA
+				}
+			
 			list(data=fbs[, whichCols],row_Tot=fbs[,fixed],sd=fbs[,sdCols])
 			})
 		
