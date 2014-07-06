@@ -40,7 +40,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 						if(is.null(dim(shift))){
 							controlCol <- rbind(colTot-shift,colTot+shift)
 							} else {
-								colShift <- apply(shift,1,max)
+								colShift <- apply(shift,2,max)
 								controlCol <- rbind(colTot-colShift,colTot+colShift)
 								}
 						}
@@ -117,6 +117,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	while(t <= nIter){
 		
 		sim <- do.call(rbind,lapply(1:nr,function(i){
+			cat(i)
 			
 			if(i%in%fixed) return(fixedRows[fixed==i,])
 			
@@ -138,10 +139,10 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					nc<-maxTol
 					}else{ 
 						###VARSTOCK not structural 0
-						
+						# browser()
 						#if(length(rrow[-nc])!=nc-1)browser()
 						rrow[-nc] <- round(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]),0)
-						rrow[nc] <- -(n0[i]-sum(rrow[-nc]))
+						rrow[nc] <- -n0[i]+sum(rrow[-nc])
 						
 						}
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
@@ -151,7 +152,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			return(rrow)
 			
 			}))
-			#browser()
+			
 		if(verbose)cat("\n")
 		#browser()
 		totCol <- colSums(sim)

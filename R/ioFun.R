@@ -14,6 +14,8 @@ readFBS <- function(file,whichCols=c("Imports.primary","Exports.primary","Domest
 			fbs <- t(sapply(year,function(y) as.numeric(y[-(1:4)])))
 			rownames(fbs) <- nm
 			colnames(fbs) <- header[-(1:4)]
+			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
+			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]
 			list(data=fbs[, whichCols],row_Tot=fbs[,fixed],sd=fbs[,sdCols])
 			})
 		
