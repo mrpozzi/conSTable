@@ -115,3 +115,9 @@ fillFBS <- function(FBS){
 
 fillFBS <- fillFBS(FBS)
 fillFBS("Congo",2008)
+
+
+
+balanceOne <- balanceFBS(FBS)
+balanceOne("Congo",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objFun = function(tab){-colSums(tab)[1]},verbose=TRUE)
+balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=TRUE)

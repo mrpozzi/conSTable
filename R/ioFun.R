@@ -1,4 +1,4 @@
-readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Domestic.supply","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
+readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
 	rawData <- scan(file, what="", sep="\n",quote="\"")
 	header <- rawData[1]; rawData <- rawData[-1]
 	header  <- unlist(strsplit(header, ","))
@@ -25,7 +25,6 @@ readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.prima
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]
 			
 			if(!is.null(structZero)){
-				browser()
 				fbs[, whichCols[-(1:2)]][fbs[, whichCols[-(1:2)]]==0 & structZero[rownames(fbs),]] <- NA
 				}
 			
