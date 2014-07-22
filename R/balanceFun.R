@@ -32,6 +32,3 @@ balanceAll <- function(FBS,oset,ncores=2L,...){
 	mclapply(names(FBS), function(Country) balanceCountry(FBS,Country,oset,...), mc.cores=ncores)
 	}
 	
-balanceOne <- balanceFBS(FBS)
-balanceOne("Congo",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objFun = function(tab){-colSums(tab)[1]},verbose=TRUE)
-balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=TRUE)
