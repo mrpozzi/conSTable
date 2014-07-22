@@ -29,6 +29,7 @@ balanceCountry <- function(FBS,Country,oset,objFun = function(tab){-colSums(tab)
 
 	
 balanceAll <- function(FBS,oset,ncores=2L,...){
+	require("parallel")
 	mclapply(names(FBS), function(Country) balanceCountry(FBS,Country,oset,...), mc.cores=ncores)
 	}
 	

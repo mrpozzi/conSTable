@@ -226,14 +226,14 @@ setMethod("show",signature("conTa"),function(object){
 	})
 
 
-setMethod("print",signature("conTa"),function(x,...){
+setMethod("print",signature("conTa"),function(x,file=NULL,...){
 	cat("Call:\n")
-	print(object@call)
+	print(x@call)
 	cat("\nOptimal Table: ")
-	print(object@bestTab)
+	print(x@bestTab)
 	cat("Number of Iterations: ")
-	cat(object@iters,"\n")
+	cat(x@iters,"\n")
 	cat("Objective Function: ")
-	cat(object@objective,"\n")
-	if(!missing(file)) write.csv(object@bestTab,...)
+	cat(x@objective,"\n")
+	if(!is.null(file)) write.csv(x@bestTab,file=file,...)
 	})
