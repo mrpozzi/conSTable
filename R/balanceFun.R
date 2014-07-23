@@ -25,7 +25,8 @@ balanceCountry <- function(FBS,Country,oset,...){
 			return(-Inf)
 			}
 		if(totFood > 3000){
-			return(min(tab[,"Food"])+max(apply(tab[,c("Feed","Bio","dStock","Loss")],1,max)))
+			# We just need to minimize food, not to miximaze the rest (even if I said to do it)
+			return(min(tab[,"Food"])) #+max(apply(tab[,c("Feed","Bio","dStock","Loss")],1,max)))
 			} else {
 				return(totFood)
 				}
@@ -44,7 +45,8 @@ balanceCountry <- function(FBS,Country,oset,...){
 					return(-Inf)
 					}
 				if(totFood > 3000){
-					return(min(tab[,"Food"])+max(apply(tab[,c("Feed","Bio","dStock","Loss")],1,max)))
+					# We just need to minimize food, not to miximaze the rest (even if I said to do it)
+					return(min(tab[,"Food"])) #+max(apply(tab[,c("Feed","Bio","dStock","Loss")],1,max)))
 					} else {
 						return(totFood)
 						}
