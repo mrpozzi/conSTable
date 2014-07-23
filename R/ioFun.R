@@ -1,4 +1,4 @@
-readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd"),whichRowsNot=c("GRAND TOTAL")){
+readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
 	rawData <- scan(file, what="", sep="\n",quote="\"")
 	header <- rawData[1]; rawData <- rawData[-1]
 	header  <- unlist(strsplit(header, ","))
@@ -29,7 +29,7 @@ readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.prima
 				
 			## Should we remove GRAND TOTAL?
 			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
-			list(data=fbs[!whichRowsNot, whichCols],row_Tot=fbs[,fixed],sd=fbs[,sdCols])
+			list(data=fbs[, whichCols],row_Tot=fbs[,fixed],sd=fbs[,sdCols])
 			})
 		
 		yearData
