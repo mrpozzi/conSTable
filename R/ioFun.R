@@ -23,6 +23,10 @@ readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.prima
 			colnames(fbs) <- header[-(1:4)]
 			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]
+			## Should we remove GRAND TOTAL?
+			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
+			removeRow <- "GRAND TOTAL"
+			fbs[!rownames(fbs) %in% removeRow, ]
 			
 			if(!is.null(structZero)){
 				fbs[, whichCols[-(1:2)]][fbs[, whichCols[-(1:2)]]==0 & structZero[rownames(fbs),]] <- NA
