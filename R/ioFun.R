@@ -1,4 +1,4 @@
-readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd")){
+readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.primary","Feed","Seed","Loss","Bio","Food","dStock"),fixed="Production",sdCols=c("Imports.sd","Exports.sd"),whichRowsNot=c("GRAND TOTAL")){
 	rawData <- scan(file, what="", sep="\n",quote="\"")
 	header <- rawData[1]; rawData <- rawData[-1]
 	header  <- unlist(strsplit(header, ","))
@@ -22,14 +22,15 @@ readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.prima
 			rownames(fbs) <- nm
 			colnames(fbs) <- header[-(1:4)]
 			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
-			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]			
+			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
+			browser()		
 			if(!is.null(structZero)){
 				fbs[, whichCols[-(1:2)]][fbs[, whichCols[-(1:2)]]==0 & structZero[rownames(fbs),]] <- NA
 				}
 				
 			## Should we remove GRAND TOTAL?
 			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
-			list(data=fbs[, whichCols],row_Tot=fbs[,fixed],sd=fbs[,sdCols])
+			list(data=fbs[!rownames(fbs) %in% whichRowsNot, whichCols],row_Tot=fbs[!rownames(fbs) %in% whichRowsNot,fixed],sd=fbs[!rownames(fbs) %in% whichRowsNot,sdCols])
 			})
 		
 		yearData
