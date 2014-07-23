@@ -204,11 +204,11 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	}
       
       if(any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"])){
-      	communicate("CAZZOCULO")
+      	communicate("Exports exceed Production +")
       	}
       	
-      if(any(bestTab[,"dStock"] < 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))){
-      	communicate("CAZZOCULO")
+      if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))){
+      	communicate("Stock cannot exceed more than 20% of Domestic Supply")
       	}
       	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
