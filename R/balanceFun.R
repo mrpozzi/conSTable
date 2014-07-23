@@ -1,3 +1,5 @@
+## Here we are close, but that's not exactly what it's needed
+
 balanceFBS <- function(FBS){
 	
 	function(Country, year,oset,...){
@@ -8,7 +10,7 @@ balanceFBS <- function(FBS){
 		
 
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))), ...)
-       tab
+       	tab
 
 		
 		}
@@ -19,7 +21,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 	balanceFBS <- balanceFBS(FBS)
 	objectiveFun <- function(tab){
 		totFood <- -sum(tab[,"Food"])
-		if(any(bestTab[,"dStock"] < 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
+		if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
 			return(-Inf)
 			}
 		if(totFood > 3000){
@@ -38,7 +40,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 		objectiveFun <- function(tab2){
 			function(tab){
 				totFood <- -sum(tab[,"Food"]) + sum(tab2[,"Food"])
-				if(any(bestTab[,"dStock"] < 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
+				if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
 					return(-Inf)
 					}
 				if(totFood > 3000){
