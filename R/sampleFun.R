@@ -1,5 +1,5 @@
 conSTable <-
-function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,...){#,keepArgs=FALSE
 	
 	if(transpose){
 		muTab <- t(muTab)
@@ -69,7 +69,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 
 
 .sampleTables <-
-function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,...){
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,...){
 
 	call <- match.call()
 	
@@ -122,10 +122,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			if(i%in%fixed) return(fixedRows[fixed==i,])
 			
 			rrow <- rep(NA,nc)
+			names(rrow) <- colnames(muTab)
 			repeat{
-				
 				nc<-ncol(muTab)
-				
 				### VARSTOCK structural 0
 				if(all(c(muTab[i,nc],bounds[i,nc,])==0)){
 					nc <- max(which(muTab[i,-nc]!=0))
@@ -198,6 +197,14 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       if(transpose){
       	bestTab <- t(bestTab)
       	okTab <- lapply(okTab,function(tab)t(tab))
+      	}
+      
+      if(any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"])){
+      	communicate("CAZZOCULO")
+      	}
+      	
+      if(any(bestTab[,"dStock"] < 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))){
+      	communicate("CAZZOCULO")
       	}
       	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
