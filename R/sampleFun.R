@@ -192,6 +192,10 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       ## Add name when indZero (otherwise NA) #Marco
       row.names(bestTab) <- names(indZero)
       bestTab[indZero,] <- 0
+      
+      ## Let's give back the correct sign for imports, otherwise the next checks do not make sense
+      bestTab[, "Imports.primary"] <- -bestTab[, "Imports.primary"]
+      
       ## Add colon names
       colnames(bestTab) <- colnames(muTab)
       if(transpose){

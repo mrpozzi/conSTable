@@ -23,7 +23,6 @@ readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.prima
 			colnames(fbs) <- header[-(1:4)]
 			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
-			browser()		
 			if(!is.null(structZero)){
 				fbs[, whichCols[-(1:2)]][fbs[, whichCols[-(1:2)]]==0 & structZero[rownames(fbs),]] <- NA
 				}
