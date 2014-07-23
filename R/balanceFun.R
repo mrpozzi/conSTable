@@ -40,7 +40,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 		objectiveFun <- function(tab2){
 			function(tab){
 				totFood <- -sum(tab[,"Food"]) + sum(tab2[,"Food"])
-				if(any(bestTab[,"dStock"] < 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
+				if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
 					return(-Inf)
 					}
 				if(totFood > 3000){
