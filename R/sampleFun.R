@@ -212,7 +212,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	}
       
       if(any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"])){
-      	communicate("Exports exceed Production +")
+      	communicate("Exports exceed Production + Imports")
       	}
       	
       if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))){
