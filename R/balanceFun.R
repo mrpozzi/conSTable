@@ -30,7 +30,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 					}else {
 						cond <- FALSE
 						}
-				if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"])) || any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"]) || cond)) {
+				if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"])) || any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"]) || cond) {
 					return(-Inf)
 					}
 				if(totFood > 3000){
