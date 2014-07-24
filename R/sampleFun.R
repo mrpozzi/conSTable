@@ -114,6 +114,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	
 	iter <- t <- 1L
 	uniqueT <- 1
+	avuoto <- 0L
 	
 	while(t <= nIter){
 		
@@ -145,6 +146,8 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						
 						}
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
+				avuoto <- avuoto + 1L
+				if(avuoto > 1000L) warning("Running in Circles!!!")
 				# browser()
 				}
 				if(verbose)cat("*")
@@ -158,6 +161,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))
 		
 		if(all(cond)){
+			avuoto <- 0L
 			if(t==1){
 				okTab[[uniqueT]] <- sim
 				attr(okTab[[uniqueT]],"mult") <- 0
@@ -171,7 +175,8 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					break
 					}
 				}
-				
+			
+			
 			if(!dejavu & t<nIter){
 				uniqueT <- uniqueT+1
 				okTab[[uniqueT]] <- sim
@@ -180,6 +185,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			
 			t <- t+1L
 			if(verbose)print(t)
+			} else {
+				avuoto <- avuoto + 1L
+				if(avuoto > 1000L) warning("Running in Circles!!!")
 			}
 		iter <- iter + 1L
         }
@@ -210,6 +218,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))){
       	communicate("Stock cannot exceed more than 20% of Domestic Supply")
       	}
+      if(abs(objFun(bestTab))) {
+      	communicate("Conditions Violated")
+      }
       	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
       }

@@ -19,41 +19,36 @@ balanceFBS <- function(FBS){
 
 balanceCountry <- function(FBS,Country,oset,...){
 	balanceFBS <- balanceFBS(FBS)
-	objectiveFun <- function(tab){
-		totFood <- -sum(tab[,"Food"])
-		if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
-			return(-Inf)
-			}
-		if(totFood > 3000){
-			# We just need to minimize food, not to miximaze the rest (even if I said to do it)
-			return(min(tab[,"Food"])) #+max(apply(tab[,c("Feed","Bio","dStock","Loss")],1,max)))
-			} else {
-				return(totFood)
-				}
-		}
-	res <- list()
-	oldObj <- 0.0
-	for(year in sort(names(FBS[[Country]]))){
-		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun,...)
-		oldObj <- tab@objective
-		res[[year]] <- tab
-		
-		objectiveFun <- function(tab2){
+	objectiveFun <- function(tab2=NULL){
+		if(!is.null(tab2)){
+			oldTot <- sum(tab2[,"Food"])
+			} 
 			function(tab){
-				totFood <- -sum(tab[,"Food"]) + sum(tab2[,"Food"])
-				if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))) {
+				totFood <- -sum(tab[,"Food"])
+				if(!is.null(tab2)){
+					cond <- (abs(totFood + oldTot) >= 150)
+					}else {
+						cond <- FALSE
+						}
+				if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"])) || any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"]) || cond)) {
 					return(-Inf)
 					}
 				if(totFood > 3000){
-					# We just need to minimize food, not to miximaze the rest (even if I said to do it)
-					return(min(tab[,"Food"])) #+max(apply(tab[,c("Feed","Bio","dStock","Loss")],1,max)))
+					return(min(tab[,"Food"])) 
 					} else {
 						return(totFood)
 						}
 					}
 				}
-		objectiveFun <- objectiveFun(tab@bestTab)
-		
+				
+	res <- list()
+	yearOld <- "NULL"
+	for(year in sort(names(FBS[[Country]]))){
+		cat("Balancing year",year,"(Country",Country,")")
+		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]]),...)
+		oldObj <- tab@objective
+		res[[year]] <- tab
+		yearOld <- year
 		}
 	res
 	}
@@ -61,6 +56,10 @@ balanceCountry <- function(FBS,Country,oset,...){
 	
 balanceAll <- function(FBS,oset,ncores=2L,...){
 	require("parallel")
-	mclapply(names(FBS), function(Country) balanceCountry(FBS,Country,oset,...), mc.cores=ncores)
+	#mclapply(names(FBS), function(Country) balanceCountry(FBS,Country,oset,...), mc.cores=ncores)
+	lapply(names(FBS), function(Country){
+		cat("Balancing Country",Country)
+		 balanceCountry(FBS,Country,oset,...)
+		 })
 	}
 	
