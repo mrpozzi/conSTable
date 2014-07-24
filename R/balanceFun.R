@@ -48,7 +48,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 	yearOld <- "NULL"
 	for(year in sort(names(FBS[[Country]]))){
 		cat("Balancing year",year,"(Country",Country,")")
-		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]]),...)
+		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]$bestTab]),...)
 		oldObj <- tab@objective
 		res[[year]] <- tab
 		yearOld <- year
