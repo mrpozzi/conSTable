@@ -10,6 +10,7 @@ balanceFBS <- function(FBS){
 		
 
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))), ...)
+       	attr(tab,"Production") <- row_Tot
        	tab
 
 		
@@ -25,6 +26,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 			oldTot <- sum(tab2[,"Food"])
 			} 
 			function(tab){
+				n0 <- attr(tab,"Production")
 				totFood <- -sum(tab[,"Food"])
 				if(!is.null(tab2)){
 					cond <- (abs(totFood + oldTot) >= 150)
