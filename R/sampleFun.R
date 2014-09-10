@@ -220,6 +220,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	}
       if(abs(objFun(bestTab))) {
       	communicate("Conditions Violated")
+      	return(NULL)
       }
       	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
@@ -228,7 +229,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 
 #################################
 ### OOP: CONstrained TAble object
-
+#new("conTa",bestTab=matrix(),tables=list(),iters=0L,objective=0,call=new("call"),args=list())
 setClass("conTa",representation=representation(bestTab="matrix",
                                               tables="list",
                                               iters="integer",
@@ -243,7 +244,7 @@ setMethod("show",signature("conTa"),function(object){
 	print(object@bestTab)
 	cat("Number of Iterations: ")
 	cat(object@iters,"\n")
-	cat("Objective Function: ")
+	cat("Objective Function: ",attr(object@objective,"objName"))
 	cat(object@objective,"\n")
 	})
 
@@ -255,7 +256,7 @@ setMethod("print",signature("conTa"),function(x,file=NULL,...){
 	print(x@bestTab)
 	cat("Number of Iterations: ")
 	cat(x@iters,"\n")
-	cat("Objective Function: ")
+	cat("Objective Function: ",attr(object@objective,"objName"))
 	cat(x@objective,"\n")
 	if(!is.null(file)) write.csv(x@bestTab,file=file,...)
 	})

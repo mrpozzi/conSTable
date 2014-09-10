@@ -25,7 +25,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 		if(!is.null(tab2)){
 			oldTot <- sum(tab2[,"Food"])
 			} 
-			function(tab){
+			funK <- function(tab){
 				n0 <- attr(tab,"Production")
 				totFood <- -sum(tab[,"Food"])
 				if(!is.null(tab2)){
@@ -42,14 +42,16 @@ balanceCountry <- function(FBS,Country,oset,...){
 						return(totFood)
 						}
 					}
+					attr(funK,"objName") <- "tot. Food"
+					funK
 				}
-				
+	
 	res <- list()
 	yearOld <- "NULL"
 	for(year in sort(names(FBS[[Country]]))){
 		cat("Balancing year",year,"(Country",Country,")")
 		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]$bestTab]),...)
-		oldObj <- tab@objective
+		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",Country,sep=" "))
 		res[[year]] <- tab
 		yearOld <- year
 		}
@@ -59,10 +61,9 @@ balanceCountry <- function(FBS,Country,oset,...){
 	
 balanceAll <- function(FBS,oset,ncores=2L,...){
 	require("parallel")
-	#mclapply(names(FBS), function(Country) balanceCountry(FBS,Country,oset,...), mc.cores=ncores)
-	lapply(names(FBS), function(Country){
+	mclapply(names(FBS), function(Country){
 		cat("Balancing Country",Country)
 		 balanceCountry(FBS,Country,oset,...)
-		 })
+		 }, mc.cores=ncores)
 	}
 	
