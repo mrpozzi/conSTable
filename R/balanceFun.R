@@ -10,7 +10,7 @@ balanceFBS <- function(FBS){
 		
 
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))), ...)
-       	attr(tab,"Production") <- row_Tot
+       	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        	tab
 
 		
@@ -49,8 +49,8 @@ balanceCountry <- function(FBS,Country,oset,...){
 	res <- list()
 	yearOld <- "NULL"
 	for(year in sort(names(FBS[[Country]]))){
-		cat("Balancing year",year,"(Country",Country,")")
-		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]$bestTab]),...)
+		cat("Balancing year ",year," (Country ",Country,")")
+		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]]$bestTab),...)
 		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",Country,sep=" "))
 		res[[year]] <- tab
 		yearOld <- year

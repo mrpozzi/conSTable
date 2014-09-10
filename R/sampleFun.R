@@ -256,7 +256,7 @@ setMethod("print",signature("conTa"),function(x,file=NULL,...){
 	print(x@bestTab)
 	cat("Number of Iterations: ")
 	cat(x@iters,"\n")
-	cat("Objective Function: ",attr(object@objective,"objName"))
+	cat("Objective Function: ",attr(x@objective,"objName"))
 	cat(x@objective,"\n")
 	if(!is.null(file)) write.csv(x@bestTab,file=file,...)
 	})
