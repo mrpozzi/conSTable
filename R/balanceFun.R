@@ -59,7 +59,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 	}
 
 	
-balanceAll <- function(FBS,oset,ncores=2L,...){
+balanceAll <- function(FBS,oset,ncores=1L,...){
 	require("parallel")
 	mclapply(names(FBS), function(Country){
 		cat("Balancing Country",Country)

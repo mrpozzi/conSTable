@@ -10,8 +10,6 @@ readFBS <- function(file,file0=NULL,whichCols=c("Imports.primary","Exports.prima
 		structZero <- read.csv(file0, row.names=1)!="num"
 	}
 	
-	
-	
 	countries <- sapply(rawData, `[`,2)
 	countryData <- tapply(rawData, countries,function(country){
 		
