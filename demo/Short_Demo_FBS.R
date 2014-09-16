@@ -23,9 +23,11 @@ library(conSTable)
 # setwd("Documents/conSTable/data/")
 
 # file <- "ContTab.csv"
-file <- "ContTabClean.csv"
-file0 <- "struct_zero.csv"
-FBS <- readFBS(file,file0)
+file <- "commodityContTab.csv"
+file0 <- "Comm.SZ.csv"
+filef <- "FeedConstraint.csv"
+FBS <- readFBS(file,file0,filef)
+
 
 
 # The command shows the data for Congo in 2008 

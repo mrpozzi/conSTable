@@ -7,9 +7,20 @@ balanceFBS <- function(FBS){
 		fbs <- FBS[[Country]][[as.character(year)]]
 		mu_Tab <- fbs$data
 		row_Tot <- fbs$row_Tot
-		
+		row_Tot <- fbs$feed
+		if(missing(objFun)) objFun <- function(tab){-colSums(tab)[1]}
+		objFeed <- function(feed, objFun){
+			bounds <- feed * c(0.8,1.2)
+			function(tab){
+				if(colSums(tab)[14]<bounds[1]||colSums(tab)[14]>bounds[2]){
+					return(-Inf)
+					} else {
+						return(objFun(tab))
+					}
+				}
+			}
 
-		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))), ...)
+		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objFun), ...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        	tab
 
