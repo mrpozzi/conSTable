@@ -1,14 +1,14 @@
 ## Here we are close, but that's not exactly what it's needed
 
 balanceFBS <- function(FBS){
-	
+	objFun <- NULL
 	function(Country, year,oset,...){
 		
 		fbs <- FBS[[Country]][[as.character(year)]]
 		mu_Tab <- fbs$data
 		row_Tot <- fbs$row_Tot
 		row_Tot <- fbs$feed
-		if(missing(objFun)) objFun <- function(tab){-colSums(tab)[1]}
+		if(is.null(objFun)) objFun <- function(tab){-colSums(tab)[1]}
 		objFeed <- function(feed, objFun){
 			bounds <- feed * c(0.8,1.2)
 			function(tab){
