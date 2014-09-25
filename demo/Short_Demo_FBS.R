@@ -2,14 +2,15 @@ rm(list=ls())
 gc()
 
 
-#remove.packages("conSTable") 
-#detach("package:conSTable")
+remove.packages("conSTable") 
+detach("package:conSTable")
 
 
 ##### Installing the package "conSTable"  ########
 # The first step before installing the package consists to download and require tha package "devtools"
 
 #install.packages("devtools")
+
 library(devtools)
 
 install_github("conSTable",username="mrpozzi",ref="master")
