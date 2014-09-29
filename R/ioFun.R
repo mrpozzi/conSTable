@@ -6,6 +6,8 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 	rawData <- strsplit(rawData, ",")
 	rawData <- rawData[sapply(rawData,length)!=1]
 	
+	colN <- unlist(lapply(strsplit(whichCols,".",fixed=TRUE),"[[",1))
+	
 	structZero <- NULL
 	if(!is.null(file0)){
 		structZero <- read.csv(file0, row.names=2)[,-1]!="num"
@@ -39,7 +41,9 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 					}
 				feedConstraints <- unique(feedConstraints)[1]
 			}
-			list(data=fbs[!rownames(fbs) %in% whichRowsNot, whichCols],row_Tot=fbs[!rownames(fbs) %in% whichRowsNot,fixed],sd=fbs[!rownames(fbs) %in% whichRowsNot,sdCols],feed=feed)
+			data <- fbs[!rownames(fbs) %in% whichRowsNot, whichCols]
+			colnames(data) <- colN
+			list(data=data,row_Tot=fbs[!rownames(fbs) %in% whichRowsNot,fixed],sd=fbs[!rownames(fbs) %in% whichRowsNot,sdCols],feed=feed)
 			})
 		
 		yearData

@@ -6,11 +6,11 @@ balanceFBS <- function(FBS){
 		mu_Tab <- fbs$data
 		row_Tot <- fbs$row_Tot
 		feed <- fbs$feed
-		if(is.null(objF)) objF <- function(tab){-colSums(tab)[1]}
+		if(is.null(objF)) objF <- function(tab){-colSums(tab)["Food"]}
 		objFeed <- function(feed, objF){
 			bounds <- feed * c(0.8,1.2)
 			function(tab){
-				if(colSums(tab)[3]<bounds[1]||colSums(tab)[3]>bounds[2]){
+				if(colSums(tab)["Feed"]<bounds[1]||colSums(tab)["Feed"]>bounds[2]){
 					return(-Inf)
 					} else {
 						return(objF(tab))
@@ -41,7 +41,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 					}else {
 						cond <- FALSE
 						}
-				if(any(tab[,"dStock"] > 0.2 * (n0 + tab[,"Imports.primary"] - tab[,"Exports.primary"])) || any(tab[,"Exports.primary"] > n0 + tab[,"Imports.primary"]) || cond) {
+				if(any(tab[,"Stock"] > 0.2 * (n0 + tab[,"Imports"] - tab[,"Exports"])) || any(tab[,"Exports"] > n0 + tab[,"Imports"]) || cond) {
 					return(-Inf)
 					}
 				if(totFood > 3000){

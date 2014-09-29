@@ -201,7 +201,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       bestTab[indZero,] <- 0
       
       ## Let's give back the correct sign for imports, otherwise the next checks do not make sense
-      bestTab[, "Imports.primary"] <- -bestTab[, "Imports.primary"]
+      bestTab[, "Imports"] <- -bestTab[, "Imports"]
       
       ## Add colon names
       colnames(bestTab) <- colnames(muTab)
@@ -210,11 +210,11 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	okTab <- lapply(okTab,function(tab)t(tab))
       	}
 
-      if(any(bestTab[!indZero,"Exports.primary"] > n0 + bestTab[!indZero,"Imports.primary"])){
+      if(any(bestTab[!indZero,"Exports"] > n0 + bestTab[!indZero,"Imports"])){
       	communicate("Exports exceed Production + Imports")
       	}
       	
-      if(any(bestTab[!indZero,"dStock"] > 0.2 * (n0 + bestTab[!indZero,"Imports.primary"] - bestTab[!indZero,"Exports.primary"]))){
+      if(any(bestTab[!indZero,"Stock"] > 0.2 * (n0 + bestTab[!indZero,"Imports"] - bestTab[!indZero,"Exports"]))){
       	communicate("Stock cannot exceed more than 20% of Domestic Supply")
       	}
       if(abs(objFun(bestTab))) {
