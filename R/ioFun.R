@@ -1,4 +1,5 @@
 readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports.primary","Feed.use","Seed.use","Losses","Industrial.use","Food.use","Stock.change"),fixed="Production",sdCols=c("Imports.sd","Exports.sd"),whichRowsNot=c("GRAND TOTAL")){
+	
 	Sys.setlocale(locale="C")
 	rawData <- scan(file, what="", sep="\n",quote="\"")
 	header <- rawData[1]; rawData <- rawData[-1]
@@ -16,8 +17,8 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 	if(!is.null(filef)){
 		feedConstraints <- read.csv(filef)
 	}
-	
 	countries <- sapply(rawData, `[`,2)
+	names(countries) <- sapply(rawData, `[`,1)
 	countryData <- tapply(rawData, countries,function(country){
 		years <- sapply(country, `[`,5)
 		yearData <- tapply(country,years,function(year){
@@ -49,7 +50,8 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 		yearData
 		
 		})
-		
+
+	attr(countryData,"countryMap") <- countries[!duplicated(countries)] #Fun Fact: unique removes names.
 	countryData
 	
 	}

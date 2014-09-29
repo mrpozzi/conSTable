@@ -2,7 +2,11 @@
 
 balanceFBS <- function(FBS){
 	function(Country, year,oset,objF=NULL,...){
-		fbs <- FBS[[Country]][[as.character(year)]]
+				
+		if(!is.character(year)) year <- as.character(year)
+		if(is.character(Country)) Country <- attr(FBS,"countryMap")[Country]
+		
+		fbs <- FBS[[Country]][[year]]
 		mu_Tab <- fbs$data
 		row_Tot <- fbs$row_Tot
 		feed <- fbs$feed
