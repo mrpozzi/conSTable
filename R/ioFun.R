@@ -19,7 +19,7 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 	countryData <- tapply(rawData, countries,function(country){
 		years <- sapply(country, `[`,5)
 		yearData <- tapply(country,years,function(year){
-			nm <- sapply(year,`[`,5)
+			nm <- sapply(year,`[`,4)
 			fbs <- t(sapply(year,function(y) as.numeric(y[-(1:5)])))
 			rownames(fbs) <- nm
 			colnames(fbs) <- header[-(1:5)]
@@ -32,7 +32,14 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 			codeYear  <- codeYear[!duplicated(codeYear,margin=2),]
 			## Should we remove GRAND TOTAL?
 			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
-			list(data=fbs[!rownames(fbs) %in% whichRowsNot, whichCols],row_Tot=fbs[!rownames(fbs) %in% whichRowsNot,fixed],sd=fbs[!rownames(fbs) %in% whichRowsNot,sdCols],feed=feedConstraints[feedConstraints[,1]== (codeYear[1])&feedConstraints[,2]==codeYear[2],3])
+			feed <- feedConstraints[feedConstraints[,1]==(codeYear[1])&feedConstraints[,2]==codeYear[2],3]
+			if(length(feed)>1) {
+				if(length(unique(feed))>1){
+					warning(paste("Constraints on Feed for",year[[1]][1],year[[1]][5],"have multiple values (choosing first).",sep=" "))
+					}
+				feedConstraints <- unique(feedConstraints)[1]
+			}
+			list(data=fbs[!rownames(fbs) %in% whichRowsNot, whichCols],row_Tot=fbs[!rownames(fbs) %in% whichRowsNot,fixed],sd=fbs[!rownames(fbs) %in% whichRowsNot,sdCols],feed=feed)
 			})
 		
 		yearData
