@@ -1,26 +1,23 @@
 ## Here we are close, but that's not exactly what it's needed
 
 balanceFBS <- function(FBS){
-	objFun <- NULL
-	function(Country, year,oset,...){
-		
+	function(Country, year,oset,objF=NULL,...){
 		fbs <- FBS[[Country]][[as.character(year)]]
 		mu_Tab <- fbs$data
 		row_Tot <- fbs$row_Tot
-		row_Tot <- fbs$feed
-		if(is.null(objFun)) objFun <- function(tab){-colSums(tab)[1]}
-		objFeed <- function(feed, objFun){
+		feed <- fbs$feed
+		if(is.null(objF)) objF <- function(tab){-colSums(tab)[1]}
+		objFeed <- function(feed, objF){
 			bounds <- feed * c(0.8,1.2)
 			function(tab){
-				if(colSums(tab)[14]<bounds[1]||colSums(tab)[14]>bounds[2]){
+				if(colSums(tab)[3]<bounds[1]||colSums(tab)[3]>bounds[2]){
 					return(-Inf)
 					} else {
-						return(objFun(tab))
+						return(objF(tab))
 					}
 				}
 			}
-
-		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objFun), ...)
+		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        	tab
 
@@ -61,7 +58,7 @@ balanceCountry <- function(FBS,Country,oset,...){
 	yearOld <- "NULL"
 	for(year in sort(names(FBS[[Country]]))){
 		cat("Balancing year ",year," (Country ",Country,")")
-		tab <- balanceFBS(Country,year,oset,objFun = objectiveFun(res[[yearOld]]$bestTab),...)
+		tab <- balanceFBS(Country,year,oset,objF = objectiveFun(res[[yearOld]]$bestTab),...)
 		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",Country,sep=" "))
 		res[[year]] <- tab
 		yearOld <- year

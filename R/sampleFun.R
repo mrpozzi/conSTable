@@ -81,7 +81,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	### zero rows	
 	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
 	names(indZero) <- rownames(muTab)
-	if(is.null(names(indZero))){
+	if(is.null(names(indZero)) || length(unique(names(indZero)))!=length(indZero)){
 		names(indZero) <- 1:length(indZero)
 		}
 	leaveOut <- -which(indZero)
@@ -148,7 +148,6 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
-				# browser()
 				}
 				if(verbose)cat("*")
 			return(rrow)
@@ -210,12 +209,12 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	bestTab <- t(bestTab)
       	okTab <- lapply(okTab,function(tab)t(tab))
       	}
-      
-      if(any(bestTab[,"Exports.primary"] > n0 + bestTab[,"Imports.primary"])){
+
+      if(any(bestTab[!indZero,"Exports.primary"] > n0 + bestTab[!indZero,"Imports.primary"])){
       	communicate("Exports exceed Production + Imports")
       	}
       	
-      if(any(bestTab[,"dStock"] > 0.2 * (n0 + bestTab[,"Imports.primary"] - bestTab[,"Exports.primary"]))){
+      if(any(bestTab[!indZero,"dStock"] > 0.2 * (n0 + bestTab[!indZero,"Imports.primary"] - bestTab[!indZero,"Exports.primary"]))){
       	communicate("Stock cannot exceed more than 20% of Domestic Supply")
       	}
       if(abs(objFun(bestTab))) {
