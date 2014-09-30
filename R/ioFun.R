@@ -16,6 +16,7 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 	feedConstraints <- NULL
 	if(!is.null(filef)){
 		feedConstraints <- read.csv(filef)
+		feedConstraints  <- feedConstraints[!duplicated(feedConstraints),]
 	}
 	countries <- sapply(rawData, `[`,2)
 	names(countries) <- sapply(rawData, `[`,1)
