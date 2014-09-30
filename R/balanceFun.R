@@ -15,7 +15,11 @@ balanceFBS <- function(FBS){
 		feed <- fbs$feed
 		if(is.null(objF)) objF <- function(tab){-colSums(tab)["Food"]}
 		objFeed <- function(feed, objF){
-			bounds <- feed * c(0.8,1.2)
+			if(length(feed)>0){
+				bounds <- feed * c(0.8,1.2)
+				} else {
+					bounds <- c(-Inf,Inf)
+					}
 			function(tab){
 				if(colSums(tab)["Feed"]<bounds[1]||colSums(tab)["Feed"]>bounds[2]){
 					return(-Inf)
@@ -35,6 +39,11 @@ balanceFBS <- function(FBS){
 
 balanceCountry <- function(FBS,Country,oset,...){
 	balanceFBS <- balanceFBS(FBS)
+	
+	if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
+			} else if(is.numeric(Country)){
+				Country <- as.character(Country)
+				}
 	
 	objectiveFun <- function(tab2=NULL){
 		if(!is.null(tab2)){
@@ -60,24 +69,25 @@ balanceCountry <- function(FBS,Country,oset,...){
 					attr(funK,"objName") <- "tot. Food"
 					funK
 				}
-	
+
 	res <- list()
 	yearOld <- "NULL"
 	for(year in sort(names(FBS[[Country]]))){
-		cat("Balancing year ",year," (Country ",Country,")")
+		cat("Balancing year ",year," (Country ",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],")\n")
 		tab <- balanceFBS(Country,year,oset,objF = objectiveFun(res[[yearOld]]$bestTab),...)
-		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",Country,sep=" "))
+		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],sep=" "))
 		res[[year]] <- tab
 		yearOld <- year
 		}
 	res
 	}
 
-	
+#	Balancing year  2011  (Country  Kazakhstan )
+
 balanceAll <- function(FBS,oset,ncores=1L,...){
 	require("parallel")
 	mclapply(names(FBS), function(Country){
-		cat("Balancing Country",Country)
+			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
 		 balanceCountry(FBS,Country,oset,...)
 		 }, mc.cores=ncores)
 	}

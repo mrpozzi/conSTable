@@ -7,7 +7,7 @@ detach("package:conSTable")
 
 
 ##### Installing the package "conSTable"  ########
-# The first step before installing the package consists to download and require tha package "devtools"
+# The first step before installing the package consists to download and require the package "devtools"
 
 #install.packages("devtools")
 

@@ -118,6 +118,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	
 	while(t <= nIter){
 		
+		if(verbose) print(t)
 		sim <- do.call(rbind,lapply(1:nr,function(i){
 			
 			if(i%in%fixed) return(fixedRows[fixed==i,])
@@ -183,7 +184,6 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				}
 			
 			t <- t+1L
-			if(verbose)print(t)
 			} else {
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
@@ -211,17 +211,20 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	}
 
       if(any(bestTab[!indZero,"Exports"] > n0 + bestTab[!indZero,"Imports"])){
-      	communicate("Exports exceed Production + Imports")
+      	#communicate("Exports exceed Production + Imports")
+      	warning("Exports exceed Production + Imports")
       	}
       	
       if(any(bestTab[!indZero,"Stock"] > 0.2 * (n0 + bestTab[!indZero,"Imports"] - bestTab[!indZero,"Exports"]))){
-      	communicate("Stock cannot exceed more than 20% of Domestic Supply")
+      	#communicate("Stock cannot exceed more than 20% of Domestic Supply")
+      	warning("Stock cannot exceed more than 20% of Domestic Supply")
       	}
-      if(abs(objFun(bestTab))) {
-      	communicate("Conditions Violated")
+      if(is.infinite(abs(objFun(bestTab)))) {
+      	#communicate("Conditions Violated")
+      	warning("Conditions Violated")
       	return(NULL)
       }
-      	return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
+      return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
       }
 
@@ -259,3 +262,21 @@ setMethod("print",signature("conTa"),function(x,file=NULL,...){
 	cat(x@objective,"\n")
 	if(!is.null(file)) write.csv(x@bestTab,file=file,...)
 	})
+
+### subsetting method
+setMethod("[[", signature = "conTa", definition = function (x, i,j,..., drop = TRUE) {
+	if (!missing(j)) {stop("Wrong number of dimensions.")}
+	if (!missing(i)) {
+		return(switch(class(i),"character" = attributes(x)[[i]],
+		                       "integer" = attributes(x)[[i]],
+		                       "numeric" = attributes(x)[[i]],
+		                       "logical" = attributes(x)[c(i,rep(FALSE,length(attributes(x))-length(i)))],
+		                        stop("Subsetting object needs to be either a character, a numeric/integer or a logical.")
+		                        ))
+		}else{return(NULL)}
+  
+   })
+
+setMethod("$", signature = "conTa", definition = function(x, name) {
+	 x[[name]]
+	 })
