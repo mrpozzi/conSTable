@@ -4,7 +4,10 @@ balanceFBS <- function(FBS){
 	function(Country, year,oset,objF=NULL,...){
 				
 		if(!is.character(year)) year <- as.character(year)
-		if(is.character(Country)) Country <- attr(FBS,"countryMap")[Country]
+		if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
+			} else if(is.numeric(Country)){
+				Country <- as.character(Country)
+				}
 		
 		fbs <- FBS[[Country]][[year]]
 		mu_Tab <- fbs$data
