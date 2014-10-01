@@ -13,7 +13,8 @@ detach("package:conSTable")
 
 library(devtools)
 
-install_github("conSTable",username="mrpozzi",ref="master")
+#install_github("conSTable",username="mrpozzi",ref="master")
+install_github("conSTable",username="marcogarieri",ref="master")
 
 # The we can load the package
 
