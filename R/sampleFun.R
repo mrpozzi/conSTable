@@ -63,7 +63,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 		
 		 }
 	
-	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks...)#
+	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,...)#
 
 	}
 
