@@ -221,10 +221,11 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	#communicate("Stock cannot exceed more than 20% of Domestic Supply")
       	warning("Stock cannot exceed more than 20% of Domestic Supply")
       	}
+      
       if(is.infinite(abs(objFun(bestTab)))) {
       	#communicate("Conditions Violated")
       	warning("Conditions Violated")
-      	return(NULL)
+      	if(!"none"%in%checks) return(NULL)
       }
       return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
