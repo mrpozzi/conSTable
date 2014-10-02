@@ -1,7 +1,7 @@
 conSTable <-
 function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),...){#,keepArgs=FALSE
 	
-	checks <- match.args(checks)
+	checks <- match.arg(checks)
 	
 	if(transpose){
 		muTab <- t(muTab)

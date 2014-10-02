@@ -14,6 +14,7 @@ detach("package:conSTable")
 library(devtools)
 
 install_github("conSTable",username="mrpozzi",ref="master")
+#install_github("conSTable",username="marcogarieri",ref="master")
 
 # The we can load the package
 
@@ -37,7 +38,7 @@ FBS_g[["1"]][["2008"]]
 
 
 balanceOne <- balanceFBS(FBS_g)
-balanceOne("1",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE)
+balanceOne("1",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="Import")
 balanceOne("Congo",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE)
 balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=TRUE)
 balanceAll(FBS,oset=c(30,30,40,50,50,10000),ncores=1)
