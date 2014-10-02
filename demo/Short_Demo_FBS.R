@@ -38,11 +38,11 @@ FBS_g[["1"]][["2008"]]
 balanceOne <- balanceFBS(FBS_g)
 ## With this example we should fix all the columns (so use the value given) and give variability only for stock
 ## IN THIS CASE IS GOING IN LOOP
-balanceOne("1",2008,oset=c(0,0,0,0,0,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="Import")
+balanceOne("1",2008,oset=c(0,0,0,0,0,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="none")
 
 ## Just another example for oset
 ## IN THIS CASE SOME CONDITIONS ARE VIOLATED
-balanceOne("1",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="Import")
+aa <- balanceOne("1",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="none")
 
 
 
