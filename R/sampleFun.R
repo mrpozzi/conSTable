@@ -93,7 +93,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}
 		muTab <- muTab[leaveOut,]
 		n0 <- n0[leaveOut]
-		if(!is.null(controlRow))controlRow <- controlRow[leaveOut,]
+		if(!is.null(controlRow)) controlRow <- controlRow[leaveOut,]
 		bounds <- bounds[leaveOut,,]
 		}
 
@@ -161,7 +161,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		# browser()
 		totCol <- colSums(sim)
 		cond <- sapply(1:nc,function(j)(totCol[j]>=controlCol[1,j] & totCol[j]<=controlCol[2,j]))
-		
+
 		if(all(cond)){
 			avuoto <- 0L
 			if(t==1){

@@ -1,7 +1,7 @@
 ## Here we are close, but that's not exactly what it's needed
 
 balanceFBS <- function(FBS){
-	function(Country, year,oset,objF=NULL,...){
+	function(Country, year,oset,objF=NULL,feedShift=20,...){
 				
 		if(!is.character(year)) year <- as.character(year)
 		if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
@@ -16,7 +16,7 @@ balanceFBS <- function(FBS){
 		if(is.null(objF)) objF <- function(tab){-colSums(tab)["Food"]}
 		objFeed <- function(feed, objF){
 			if(length(feed)>0){
-				bounds <- feed * c(0.8,1.2)
+				bounds <- feed * (1+feedShift/100*c(-1,1))
 				} else {
 					bounds <- c(-Inf,Inf)
 					}
@@ -37,8 +37,8 @@ balanceFBS <- function(FBS){
 	}
 
 
-balanceCountry <- function(FBS,Country,oset,...){
-	balanceFBS <- balanceFBS(FBS)
+balanceCountry <- function(FBS,Country,oset,feedShift=20,...){
+	balanceFBS <- balanceFBS(FBS,feedShift)
 	
 	if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
 			} else if(is.numeric(Country)){
@@ -84,11 +84,11 @@ balanceCountry <- function(FBS,Country,oset,...){
 
 #	Balancing year  2011  (Country  Kazakhstan )
 
-balanceAll <- function(FBS,oset,ncores=1L,...){
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,...){
 	require("parallel")
 	mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
-		 balanceCountry(FBS,Country,oset,...)
+		 balanceCountry(FBS,Country,oset,feedShift,...)
 		 }, mc.cores=ncores)
 	}
 	
