@@ -25,7 +25,6 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 		dimnames(bounds) <- c(dimnames(muTab),list(c("Lower","Upper")))
 		
 		if(!is.null(prop)){
-			
 			if(missing(controlCol)) controlCol <- rbind(colTot*(1-prop*sign(colTot)),colTot*(1+prop*sign(colTot)))
 			
 			if(!is.null(dim(prop))|(length(prop)==1)){
@@ -38,7 +37,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 					}
 				
 				} else {
-					
+					#browser()
 					if(missing(controlCol)) {
 						if(is.null(dim(shift))){
 							controlCol <- rbind(colTot-shift,colTot+shift)
@@ -81,7 +80,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		}else argz <- list()
 		
 	### zero rows	
-	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
+	## This approach create problems
+	#indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
+	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))&(n0==0)
 	names(indZero) <- rownames(muTab)
 	if(is.null(names(indZero)) || length(unique(names(indZero)))!=length(indZero)){
 		names(indZero) <- 1:length(indZero)
@@ -113,7 +114,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)
 		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2))))))
 		}
-	
+	#browser()
 	iter <- t <- 1L
 	uniqueT <- 1
 	avuoto <- 0L
@@ -192,7 +193,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}
 		iter <- iter + 1L
         }
-      
+      #browser()
       okTab <- okTab[1:uniqueT]
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
