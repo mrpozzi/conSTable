@@ -37,7 +37,7 @@ balanceFBS <- function(FBS){
 	}
 
 
-balanceCountry <- function(FBS,Country,oset,feedShift=20,...){
+balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
 	balanceFBS <- balanceFBS(FBS,feedShift)
 	
 	if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
@@ -57,7 +57,7 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,...){
 					}else {
 						cond <- FALSE
 						}
-				if(any(tab[,"Stock"] > 0.2 * (n0 + tab[,"Imports"] - tab[,"Exports"])) || any(tab[,"Exports"] > n0 + tab[,"Imports"]) || cond) {
+				if(any(tab[,"Stock"] > stockShift/100 * (n0 + tab[,"Imports"] - tab[,"Exports"])) || any(tab[,"Exports"] > n0 + tab[,"Imports"]) || cond) {
 					return(-Inf)
 					}
 				if(totFood > 3000){
@@ -84,11 +84,11 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,...){
 
 #	Balancing year  2011  (Country  Kazakhstan )
 
-balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,...){
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,...){
 	require("parallel")
 	mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
-		 balanceCountry(FBS,Country,oset,feedShift,...)
+		 balanceCountry(FBS,Country,oset,feedShift,stockShift,...)
 		 }, mc.cores=ncores)
 	}
 	
