@@ -1,5 +1,5 @@
 conSTable <-
-function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),stkSft=NULL,...){#,keepArgs=FALSE
 	
 	checks <- match.arg(checks)
 	
@@ -62,7 +62,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 		
 		 }
 	
-	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,...)#
+	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,stkSft=stkSft,...)#
 
 	}
 
@@ -70,7 +70,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 
 
 .sampleTables <-
-function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]}, checks="all",fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,...){
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]}, checks="all",fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,stkSft=20,...){
 
 	call <- match.call()
 	
@@ -217,11 +217,15 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	#communicate("Exports exceed Production + Imports")
       	warning("Exports exceed Production + Imports")
       	}
-      	
-      if(any(c("all","Stock")%in%checks) & any(bestTab[!indZero,"Stock"] > 0.2 * (n0 + bestTab[!indZero,"Imports"] - bestTab[!indZero,"Exports"]))){
+      
+      if(!is.null(stkSft)){
+      	#browser()
+		      if(any(c("all","Stock")%in%checks) & any(bestTab[!indZero,"Stock"] > stkSft/100 * (n0 + bestTab[!indZero,"Imports"] - bestTab[!indZero,"Exports"]))){
       	#communicate("Stock cannot exceed more than 20% of Domestic Supply")
-      	warning("Stock cannot exceed more than 20% of Domestic Supply")
-      	}
+      	warning(paste("Stock cannot exceed more than ",stkSft,"% of Domestic Supply",sep=""))
+      	}      	
+      }	
+
       
       if(is.infinite(abs(objFun(bestTab)))) {
       	#communicate("Conditions Violated")

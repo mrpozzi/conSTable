@@ -1,7 +1,7 @@
 ## Here we are close, but that's not exactly what it's needed
 
 balanceFBS <- function(FBS){
-	function(Country, year,oset,objF=NULL,feedShift=20,...){
+	function(Country, year,oset,objF=NULL,feedShift=20,stockShift=20,writeTable=FALSE,...){
 				
 		if(!is.character(year)) year <- as.character(year)
 		if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
@@ -28,13 +28,21 @@ balanceFBS <- function(FBS){
 					}
 				}
 			}
-		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),...)
+		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        	tab
+       	if(writeTable){
+       		who <- names(attr(FBS,"countryMap")[match(Country,attr(FBS,"countryMap"))])
+       		when <- year
+       		write.table(tab@bestTab,file=paste(who,when,".csv",sep=""),sep=",",col.names=NA)
+       	}
 
 		
 		}
 	}
+
+
+#### STOCKSHIFT, WE HAVE TO TALK ABOUT IT, FOR balanceOne 
 
 
 balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
