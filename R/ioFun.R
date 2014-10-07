@@ -44,8 +44,13 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 					}
 				feedConstraints <- unique(feedConstraints)[1]
 			}
+			
+			ind <- duplicated(rownames(fbs))
+			fbs <- fbs[!ind,]
+			
 			data <- fbs[!rownames(fbs) %in% whichRowsNot, whichCols]
 			colnames(data) <- colN
+			
 			list(data=data,row_Tot=fbs[!rownames(fbs) %in% whichRowsNot,fixed],sd=fbs[!rownames(fbs) %in% whichRowsNot,sdCols],feed=feed)
 			})
 		
