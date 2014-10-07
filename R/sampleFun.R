@@ -6,7 +6,24 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 	if(transpose){
 		muTab <- t(muTab)
 		}
-	
+	## If we have positive value for Imports
+	if(any(muTab[,"Imports"]>0,na.rm=T)){
+		stop(paste0("Negative values in Imports for ",paste(names(which(muTab[,"Imports"]>0)),collapse=", ")))
+	}
+	## If we have positive value for Exports
+	if(any(muTab[,c("Exports")]<0,na.rm=T)){
+		stop(paste0("Negative values in Exports for ",paste(names(which(muTab[,"Exports"]<0)),collapse=", ")))
+	}
+	## If we have positive value for Production
+	if(any(rowTot<0,na.rm=T)){
+		stop(paste0("Negative values in Production for ",paste(names(which(rowTot<0)),collapse=", ")))
+	}
+
+	## If any negative value in utilities, we set to zero
+	if(any(muTab[,c("Feed","Seed","Losses","Industrial","Food")]<0,na.rm=T)){
+		muTab[,c("Feed","Seed","Losses","Industrial","Food")][muTab[,c("Feed","Seed","Losses","Industrial","Food")]<0] <- 0	
+	}
+		
 	# Need to remove NA in colSums
 	colTot <- colSums(muTab, na.rm=T)
 	colMu <- colMeans(muTab, na.rm=T)
