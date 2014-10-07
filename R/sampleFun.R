@@ -265,7 +265,7 @@ setClass("conTa",representation=representation(bestTab="matrix",
                                               args="list"))
 
 setMethod("show",signature("conTa"),function(object){
-	tab <- x@bestTab
+	tab <- object@bestTab
 	tab[,colnames(tab)!="Stock"] <- abs(tab[,colnames(tab)!="Stock"])
 	cat("Call:\n")
 	print(object@call)
