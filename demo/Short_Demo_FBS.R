@@ -35,7 +35,12 @@ FBS_g <- readFBS_group(file_g,file0,filef)
 # The command shows the data for Congo in 2008 
 FBS_g[["1"]][["2008"]]
 
-balanceOne <- balanceFBS(FBS_g,feedShift=20)
+balanceOne <- balanceFBS(FBS_g)#,feedShift=20)
+
+balanceOne("9",2012,oset=c(0,0,0,0,0,10000),prop=NULL, nIter = 100,verbose=TRUE,checks="none",feedShift=30,writeTable=T)
+
+
+
 balanceOne("1",2008,oset=c(0,0,0,0,0,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="none")
 ## With this example we should fix all the columns (so use the value given) and give variability only for stock
 ## IN THIS CASE IS GOING IN LOOP

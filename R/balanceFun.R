@@ -34,7 +34,7 @@ balanceFBS <- function(FBS){
        	if(writeTable){
        		who <- names(attr(FBS,"countryMap")[match(Country,attr(FBS,"countryMap"))])
        		when <- year
-       		tbl <- x@bestTab
+       		tbl <- tab@bestTab
        		tbl[,colnames(tbl)!="Stock"] <- abs(tbl[,colnames(tbl)!="Stock"])
 	write.table(tbl,file=paste(who,when,".csv",sep=""),sep=",",col.names=NA,row.names=T)
        	}
