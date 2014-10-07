@@ -265,10 +265,12 @@ setClass("conTa",representation=representation(bestTab="matrix",
                                               args="list"))
 
 setMethod("show",signature("conTa"),function(object){
+	tab <- x@bestTab
+	tab[,colnames(tab)!="Stock"] <- abs(tab[,colnames(tab)!="Stock"])
 	cat("Call:\n")
 	print(object@call)
 	cat("\nOptimal Table: ")
-	print(object@bestTab)
+	print(tab)
 	cat("Number of Iterations: ")
 	cat(object@iters,"\n")
 	cat("Objective Function: ",attr(object@objective,"objName"))
@@ -277,15 +279,17 @@ setMethod("show",signature("conTa"),function(object){
 
 
 setMethod("print",signature("conTa"),function(x,file=NULL,...){
+	tab <- x@bestTab
+	tab[,colnames(tab)!="Stock"] <- abs(tab[,colnames(tab)!="Stock"])
 	cat("Call:\n")
 	print(x@call)
 	cat("\nOptimal Table: ")
-	print(x@bestTab)
+	print(tab)
 	cat("Number of Iterations: ")
 	cat(x@iters,"\n")
 	cat("Objective Function: ",attr(x@objective,"objName"))
 	cat(x@objective,"\n")
-	if(!is.null(file)) write.csv(x@bestTab,file=file,...)
+	if(!is.null(file)) write.csv(tab,file=file,...)
 	})
 
 ### subsetting method

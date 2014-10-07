@@ -30,13 +30,15 @@ balanceFBS <- function(FBS){
 			}
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
-       	tab
+       	
        	if(writeTable){
        		who <- names(attr(FBS,"countryMap")[match(Country,attr(FBS,"countryMap"))])
        		when <- year
-       		write.table(tab@bestTab,file=paste(who,when,".csv",sep=""),sep=",",col.names=NA)
+       		tbl <- x@bestTab
+       		tbl[,colnames(tbl)!="Stock"] <- abs(tbl[,colnames(tbl)!="Stock"])
+	write.table(tbl,file=paste(who,when,".csv",sep=""),sep=",",col.names=NA,row.names=T)
        	}
-
+	return(invisible(tab))
 		
 		}
 	}
@@ -87,16 +89,17 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
 		res[[year]] <- tab
 		yearOld <- year
 		}
-	res
+	return(invisible(res))
 	}
 
 #	Balancing year  2011  (Country  Kazakhstan )
 
 balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,...){
 	require("parallel")
-	mclapply(names(FBS), function(Country){
+	return(invisible(mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
 		 balanceCountry(FBS,Country,oset,feedShift,stockShift,...)
-		 }, mc.cores=ncores)
+		 }, mc.cores=ncores)))
+	
 	}
 	
