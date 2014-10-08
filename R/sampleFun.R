@@ -156,14 +156,13 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					
 					rrow[-c(maxTol,(nc+1):length(rrow))] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]))
 
-					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))
+					rrow[maxTol] <- (-n0[i]+sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
 					}else{ 
 						###VARSTOCK not structural 0
 						#browser()
-						#if(length(rrow[-nc])!=nc-1)browser()
-						rrow[-nc] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
-						rrow[nc] <- -n0[i]+sum(rrow[-nc])
+						rrow[-nc] <- (rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
+						rrow[nc] <- (-n0[i]+sum(rrow[-nc]))
 						
 						}
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
@@ -221,7 +220,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       bestTab[indZero,] <- 0
       
       ## Let's give back the correct sign for imports, otherwise the next checks do not make sense
-      bestTab[, "Imports"] <- -bestTab[, "Imports"]
+      #bestTab[, "Imports"] <- -bestTab[, "Imports"]
       
       ## Add colon names
       colnames(bestTab) <- colnames(muTab)
