@@ -243,13 +243,13 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	}      	
       }	
 
-      
       if(is.infinite(abs(objFun(bestTab)))) {
       	#communicate("Conditions Violated")
       	warning("Conditions Violated")
       	if(!"none"%in%checks) return(NULL)
       }
       rownames(bestTab) <- rownames(muTab)
+      	bestTab$Production <- n0[rownames(muTab)]
       return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
       }
