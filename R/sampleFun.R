@@ -161,7 +161,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					}else{ 
 						###VARSTOCK not structural 0
 						#browser()
-						rrow[-nc] <- (rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
+						rrow[-nc] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
 						rrow[nc] <- (-n0[i]+sum(rrow[-nc]))
 						
 						}
