@@ -48,7 +48,7 @@ balanceFBS <- function(FBS){
 
 
 balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
-	balanceFBS <- balanceFBS(FBS,feedShift)
+	balanceFBS <- balanceFBS(FBS)
 	
 	if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
 			} else if(is.numeric(Country)){
@@ -84,7 +84,7 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
 	yearOld <- "NULL"
 	for(year in sort(names(FBS[[Country]]))){
 		cat("Balancing year ",year," (Country ",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],")\n")
-		tab <- balanceFBS(Country,year,oset,objF = objectiveFun(res[[yearOld]]$bestTab),...)
+		tab <- balanceFBS(Country,year,oset,objF = objectiveFun(res[[yearOld]]$bestTab),feedShift=feedShift,...)
 		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],sep=" "))
 		res[[year]] <- tab
 		yearOld <- year
