@@ -32,8 +32,9 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
 			#browser()
 			if(!is.null(structZero)){
-				structZero <- structZero[rownames(structZero)%in%rownames(fbs)]
-				fbs[rownames(structZero), whichCols[-(1:2)]][fbs[rownames(structZero), whichCols[-(1:2)]]==0 & structZero] <- NA
+				structZero <- structZero[rownames(structZero)%in%rownames(fbs),]
+				structZero <- structZero[,colnames(structZero)%in%colnames(fbs[rownames(structZero), whichCols[-(1:2)]])]
+				fbs[rownames(structZero),colnames(structZero)][structZero] <- NA
 				}
 			codeYear <- t(sapply(year,`[`,c(2,5)))
 			codeYear  <- codeYear[!duplicated(codeYear,margin=2),]
@@ -101,8 +102,9 @@ readFBS_group <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","E
 			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
 			if(!is.null(structZero)){
-				structZero <- structZero[rownames(structZero)%in%rownames(fbs)]
-				fbs[rownames(structZero), whichCols[-(1:2)]][fbs[rownames(structZero), whichCols[-(1:2)]]==0 & structZero] <- NA
+				structZero <- structZero[rownames(structZero)%in%rownames(fbs),]
+				structZero <- structZero[,colnames(structZero)%in%colnames(fbs[rownames(structZero), whichCols[-(1:2)]])]
+				fbs[rownames(structZero),colnames(structZero)][structZero] <- NA
 				}
 			codeYear <- t(sapply(year,`[`,c(2,4)))
 			codeYear  <- codeYear[!duplicated(codeYear,margin=2),]

@@ -38,10 +38,19 @@ FBS_g[["1"]][["2008"]]
 balanceOne <- balanceFBS(FBS_g)#,feedShift=20)
 balanceOne <- balanceFBS(FBS)#,feedShift=20)
 
+aa <- 
+balanceOne("9",2012,oset=c(30,30,30,30,30,10000),prop=NULL, nIter = 100,verbose=TRUE,checks="none",feedShift=30)
+
+ss <- aa@bestTab
+
+ss["oilcrops.oil..other",]
+
 
 balanceOne("9",2012,oset=c(0,0,0,0,0,10000),prop=NULL, nIter = 100,verbose=TRUE,checks="none",feedShift=30,writeTable=T)
 
 FBS[["9"]][["2012"]]$data["coconut.oil",]
+
+FBS[["9"]][["2012"]]$data["oilcrops.oil..other",]
 
 
 balanceOne("1",2008,oset=c(0,0,0,0,0,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="none")
