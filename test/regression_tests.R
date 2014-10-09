@@ -22,5 +22,5 @@ if(all(abs(apply(ss,1,function(x){ sum(x[!names(x)%in%c("Production","Stock")])-
 	cat("Passed\n")
 	} else {
 	cat("Not Passed\n")	
-	print(head(abs(apply(ss,1,function(x){ sum(x[!names(x)%in%c("Production","Stock")])-x["Production"]-x["Stock"]})[apply(ss,1,function(x){ sum(x[!names(x)%in%c("Production","Stock")])-x["Production"]-x["Stock"]}))>sqrt(.Machine$double.eps)]))
+	print(head(abs(apply(ss,1,function(x){ sum(x[!names(x)%in%c("Production","Stock")])-x["Production"]-x["Stock"]}))[apply(ss,1,function(x){ sum(x[!names(x)%in%c("Production","Stock")])-x["Production"]-x["Stock"]})>sqrt(.Machine$double.eps)]))
 	}

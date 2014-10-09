@@ -155,14 +155,14 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					maxTol <- which.max(apply(bounds[i,,],1,function(x)diff(range(x))))
 					
 					rrow[-c(maxTol,(nc+1):length(rrow))] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]))
-					rrow["Import"] <- -rrow["Import"]
+					rrow["Imports"] <- -rrow["Imports"]
 					rrow[maxTol] <- (-n0[i]+sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
 					}else{ 
 						###VARSTOCK not structural 0
 						#browser()
 						rrow[-nc] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
-						rrow["Import"] <- -rrow["Import"]
+						rrow["Imports"] <- -rrow["Imports"]
 						rrow[nc] <- (-n0[i]+sum(rrow[-nc]))
 						
 						}
