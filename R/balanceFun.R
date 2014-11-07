@@ -15,9 +15,9 @@ balanceFBS <- function(FBS){
 		feed <- fbs$feed
 		if(is.null(objF)) objF <- function(tab){-colSums(tab)["Food"]}
 		objFeed <- function(feed, objF){
-			if(length(feed)>0){
+			if(length(feed)==1){
 				bounds <- feed * (1+feedShift/100*c(-1,1))
-				} else {
+				} else if(length(feed)!=2) {
 					bounds <- c(-Inf,Inf)
 					}
 			function(tab){

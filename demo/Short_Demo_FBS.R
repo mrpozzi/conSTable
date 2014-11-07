@@ -31,6 +31,10 @@ filef <- "FeedConstraint.csv"
 FBS <- readFBS(file,file0,filef)
 FBS_g <- readFBS_group(file_g,file0,filef) 
 
+file.Adj <- "Adj.commodityContTab.csv"
+filef.Adj <- "Adj.feedrange.csv"
+FBS.Adj <- readFBS(file.Adj,file0,filef.Adj)
+
 
 # The command shows the data for Congo in 2008 
 FBS_g[["1"]][["2008"]]

@@ -156,7 +156,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					
 					rrow[-c(maxTol,(nc+1):length(rrow))] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]))
 					rrow["Imports"] <- -rrow["Imports"]
-					rrow[maxTol] <- (-n0[i]+sum(rrow[-c(maxTol,nc+1:length(rrow))]))
+					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
 					rrow[is.na(muTab[i,])] <- 0
 					}else{ 
@@ -164,7 +164,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						#browser()
 						rrow[-nc] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
 						rrow["Imports"] <- -rrow["Imports"]
-						rrow[nc] <- (-n0[i]+sum(rrow[-nc]))
+						rrow[nc] <- (n0[i]-sum(rrow[-nc]))
 						rrow[is.na(muTab[i,])] <- 0
 						}
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break

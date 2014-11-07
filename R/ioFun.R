@@ -16,6 +16,9 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 	feedConstraints <- NULL
 	if(!is.null(filef)){
 		feedConstraints <- read.csv(filef)
+		if(ncol(feedConstraints)>3) {
+			feedConstraints <- feedConstraints[,c(1,3,5,7)]
+		} 
 		# Removing duplicated rows
 		feedConstraints  <- feedConstraints[!duplicated(feedConstraints),]
 	}
@@ -40,7 +43,8 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 			codeYear  <- codeYear[!duplicated(codeYear,margin=2),]
 			## Should we remove GRAND TOTAL?
 			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
-			feed <- feedConstraints[feedConstraints[,1]==(codeYear[1])&feedConstraints[,2]==codeYear[2],3]
+			#browser()
+			feed <- feedConstraints[feedConstraints[,1]==(codeYear[1])&feedConstraints[,2]==codeYear[2],3:ncol(feedConstraints)]
 			if(length(feed)>1) {
 				if(length(unique(feed))>1){
 					warning(paste("Constraints on Feed for",year[[1]][1],year[[1]][5],"have multiple values (choosing first).",sep=" "))
@@ -110,13 +114,12 @@ readFBS_group <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","E
 			codeYear  <- codeYear[!duplicated(codeYear,margin=2),]
 			## Should we remove GRAND TOTAL?
 			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
-			#browser()
-			feed <- feedConstraints[feedConstraints[,1]==(codeYear[1])&feedConstraints[,2]==codeYear[2],3]
+			feed <- feedConstraints[feedConstraints[,1]==(codeYear[1])&feedConstraints[,2]==codeYear[2],3:ncol(feedConstraints)]
 			if(length(feed)>1) {
-				if(length(unique(feed))>1){
+				if(length(unique(feed))>ifelse(is.null(ncol(feed)),1,ncol(feed))){
 					warning(paste("Constraints on Feed for",year[[1]][1],year[[1]][5],"have multiple values (choosing first).",sep=" "))
 					}
-				feedConstraints <- unique(feedConstraints)[1]
+				feed <- unique(feed)
 			}
 			data <- fbs[!rownames(fbs) %in% whichRowsNot, whichCols]
 			colnames(data) <- colN
