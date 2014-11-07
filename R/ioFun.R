@@ -1,4 +1,5 @@
-readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports.primary","Feed.use","Seed.use","Losses","Industrial.use","Food.use","Stock.change"),fixed="Production",sdCols=c("Imports.sd","Exports.sd"),whichRowsNot=c("GRAND TOTAL")){
+# CHANGE FROM Imports.primary & Exports.primary to Imports.total & Exports.total
+readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.total","Exports.total","Feed.use","Seed.use","Losses","Industrial.use","Food.use","Stock.change"),fixed="Production",sdCols=c("Imports.sd","Exports.sd"),whichRowsNot=c("GRAND TOTAL")){
 	
 	Sys.setlocale(locale="C")
 	rawData <- scan(file, what="", sep="\n",quote="\"")
@@ -31,6 +32,7 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 			## I am making this comment because we have to read correctly imports and exports from the original data
 			## PROBABLY THIS WOULD LEAD TO SOME BUGS
 			#fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
+			browser()
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
 			#browser()
 			if(!is.null(structZero)){
