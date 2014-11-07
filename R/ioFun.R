@@ -28,7 +28,9 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.primary","Exports
 			fbs <- t(sapply(year,function(y) as.numeric(y[-(1:5)])))
 			rownames(fbs) <- nm
 			colnames(fbs) <- header[-(1:5)]
-			fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
+			## I am making this comment because we have to read correctly imports and exports from the original data
+			## PROBABLY THIS WOULD LEAD TO SOME BUGS
+			#fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
 			#browser()
 			if(!is.null(structZero)){
