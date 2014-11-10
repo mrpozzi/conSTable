@@ -35,7 +35,7 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.total","Exports.t
 			## I am making this comment because we have to read correctly imports and exports from the original data
 			## PROBABLY THIS WOULD LEAD TO SOME BUGS
 			#fbs[, whichCols[1:2]][fbs[,sdCols]==0] <- NA
-			browser()
+			#browser()
 			fbs[, whichCols[1]] <- -fbs[, whichCols[1]]	
 			#browser()
 			if(!is.null(structZero)){
