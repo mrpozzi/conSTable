@@ -47,10 +47,10 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.total","Exports.t
 			codeYear  <- codeYear[!duplicated(codeYear,margin=2),]
 			## Should we remove GRAND TOTAL?
 			## Since we made the control on the total of the columns, then we need to remove GRAND TOTAL
-			#browser()
+			browser()
 			feed <- feedConstraints[feedConstraints[,1]==(codeYear[1])&feedConstraints[,2]==codeYear[2],3:ncol(feedConstraints)]
-			if(length(feed)>1) {
-				if(length(unique(feed))>1){
+			if(dim(feed)[1]>1) {
+				if(dim(unique(feed))[1]>1){
 					warning(paste("Constraints on Feed for",year[[1]][1],year[[1]][5],"have multiple values (choosing first).",sep=" "))
 					}
 				feedConstraints <- unique(feedConstraints)[1]
