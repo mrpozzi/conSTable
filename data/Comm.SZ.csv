@@ -1,4 +1,4 @@
-Group,Commodity,Production,Imports.total,Stock.change,Exports.total,Food.use,Feed.use,Seed.use,Losses,Industrial.use
+Group,Commodity,Production,Imports,Stock.change,Exports,Food.use,Feed.use,Seed.use,Losses,Industrial.use
 Butter and ghee,butter.and.ghee,num,num,num,num,num,,,num,
 Cereals,barley.and.products,num,num,num,num,num,num,num,num,num
 Cereals,cereals..other.and.products,num,num,num,num,num,num,num,num,num
