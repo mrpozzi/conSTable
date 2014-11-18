@@ -211,7 +211,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}
 		iter <- iter + 1L
         }
-      #browser()
+      
       okTab <- okTab[1:uniqueT]
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
@@ -249,6 +249,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	warning("Conditions Violated")
       	if(!"none"%in%checks) return(NULL)
       }
+      browser()
       rownames(bestTab) <- rownames(muTab)
       	bestTab$Production <- n0[rownames(muTab)]
       return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))

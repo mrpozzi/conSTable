@@ -32,13 +32,13 @@ Meat and fish,ovine.meat.and.offal,num,num,num,num,num,,,num,
 Meat and fish,pelagic.fish,num,num,num,num,num,num,,num,
 Meat and fish,pigmeat.and.offal,num,num,num,num,num,,,num,
 Meat and fish,poultry.meat.and.offal,num,num,num,num,num,,,num,
-Oilseeds,coconuts..including.copra,num,num,num,num,num,,num,num,num
-Oilseeds,cottonseed,num,num,num,num,num,,num,num,num
-Oilseeds,oilcrops..other,num,num,num,num,num,,num,num,num
-Oilseeds,soybeans,num,num,num,num,num,,num,num,num
-Oilseeds,sunflower.and.safflower.seed,num,num,num,num,num,,num,num,num
-Oilseeds,groundnuts,num,num,num,num,num,,num,num,num
-Oilseeds,rape.and.mustard.seed,num,num,num,num,num,,num,num,num
+Oilseeds,coconuts..including.copra,num,num,num,num,num,num,num,num,num
+Oilseeds,cottonseed,num,num,num,num,num,num,num,num,num
+Oilseeds,oilcrops..other,num,num,num,num,num,num,num,num,num
+Oilseeds,soybeans,num,num,num,num,num,num,num,num,num
+Oilseeds,sunflower.and.safflower.seed,num,num,num,num,num,num,num,num,num
+Oilseeds,groundnuts,num,num,num,num,num,num,num,num,num
+Oilseeds,rape.and.mustard.seed,num,num,num,num,num,num,num,num,num
 Pulses,beans,num,num,num,num,num,num,num,num,
 Pulses,peas,num,num,num,num,num,num,num,num,
 Pulses,pulses..other,num,num,num,num,num,num,num,num,
