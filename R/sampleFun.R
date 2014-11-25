@@ -149,6 +149,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				nc<-ncol(muTab)
 				### VARSTOCK structural 0
 				if(all(c(muTab[i,nc],bounds[i,nc,])==0)){
+					
 					nc <- max(which(muTab[i,-nc]!=0))
 					rrow[(1:length(rrow))>nc]<-0
 					

@@ -1,7 +1,7 @@
 ## Here we are close, but that's not exactly what it's needed
 
-balanceFBS <- function(FBS){
-	function(Country, year,oset,objF=NULL,feedShift=20,stockShift=20,writeTable=FALSE,...){
+balanceFBS <- function(FBS,check=FALSE){
+	function(Country, year,oset=NULL,objF=NULL,feedShift=20,stockShift=20,writeTable=FALSE,...){
 				
 		if(!is.character(year)) year <- as.character(year)
 		if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
@@ -14,6 +14,14 @@ balanceFBS <- function(FBS){
 		row_Tot <- fbs$row_Tot
 		feed <- fbs$feed
 		if(is.null(objF)) objF <- function(tab){-colSums(tab)["Food"]}
+		
+		if(check) {
+			fe <- sum(fbs$data[,3],na.rm=T)
+			if(fe<fbs$feed[1] || fe>fbs$feed[2]) {
+				warning(paste("Feed falls out of boundaries: ",fe," [",fbs$feed[1],", ",fbs$feed[2],"]"))
+				}
+			}
+		
 		objFeed <- function(feed, objF){
 			if(length(feed)==1){
 				bounds <- feed * (1+feedShift/100*c(-1,1))
@@ -28,8 +36,28 @@ balanceFBS <- function(FBS){
 					}
 				}
 			}
+			
+		if(is.null(oset)) {
+			oset <- colSums(mu_Tab,na.rm=T)*20/100
+			oset["Feed"] <- sum(fbs$data[,3],na.rm=T)*min(1-feed[1],feed[2]-1)
+		}
+		
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
+       	
+       	if(check) {
+       		while(1) {
+       			if(!is.null(tab@bestTab)) {
+       				fe <- sum(tab@bestTab[,"Feed"])
+       				if(fe<fbs$feed[1] || fe>fbs$feed[2]) {
+       					warning(paste("Feed falls out of boundaries: ",fe," [",fbs$feed[1],", ",fbs$feed[2],"]. Shrinking bounds."))
+       					oset["Feed"] <- oset["Feed"]/2
+       					} else break
+       				} else break
+       			tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
+       			if(!is.null(tab)) attr(tab,"Production") <- row_Tot
+       			}
+       		}
        	
        	if(writeTable){
        		who <- names(attr(FBS,"countryMap")[match(Country,attr(FBS,"countryMap"))])
@@ -93,6 +121,16 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
 	}
 
 #	Balancing year  2011  (Country  Kazakhstan )
+
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,...){
+	require("parallel")
+	return(invisible(mclapply(names(FBS), function(Country){
+			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
+		 balanceCountry(FBS,Country,oset,feedShift,stockShift,...)
+		 }, mc.cores=ncores)))
+	
+	}
+	
 
 balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,...){
 	require("parallel")
