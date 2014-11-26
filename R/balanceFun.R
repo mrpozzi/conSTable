@@ -36,9 +36,9 @@ balanceFBS <- function(FBS,check=FALSE){
 					}
 				}
 			}
-			
+
 		if(is.null(oset)) {
-			oset <- colSums(mu_Tab,na.rm=T)*20/100
+			oset <- colSums(mu_Tab[,-c(1:2)],na.rm=T)*20/100
 			oset["Feed"] <- sum(fbs$data[,3],na.rm=T)*min(1-feed[1],feed[2]-1)
 		}
 		
