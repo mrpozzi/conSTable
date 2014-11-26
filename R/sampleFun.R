@@ -69,7 +69,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 						shift <- as.matrix(do.call(rbind,lapply(1:nrow(muTab),function(i) shift)))
 						}
 					}
-			
+			browser()
 			bounds[,,"Lower"] <- as.matrix(muTab - shift)
 			bounds[,,"Upper"] <- as.matrix(muTab + shift)
 			
