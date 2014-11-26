@@ -168,6 +168,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						rrow[nc] <- (n0[i]-sum(rrow[-nc]))
 						rrow[is.na(muTab[i,])] <- 0
 						}
+				browser()
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
