@@ -70,12 +70,15 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 						}
 					}
 					
-			bounds[,,"Lower"] <- as.matrix(muTab - shift)
-			bounds[,,"Upper"] <- as.matrix(muTab + shift)
+			bounds[,,"Lower"] <- as.matrix(muTab - abs(shift))
+			bounds[,,"Upper"] <- as.matrix(muTab + abs(shift))
 			
 			# We need to set the bounds to zero, and then muTab
 			bounds[,,"Lower"][is.na(muTab)] <- bounds[,,"Upper"][is.na(muTab)] <- 0
 			muTab[is.na(muTab)] <- 0
+			
+			### this should never be triggered due to the way we define them.
+			if(any(bounds[,,"Upper"]<bounds[,,"Lower"])) error("Something is wrong with the bounds!!!")
 		
 		 }
 	
@@ -168,7 +171,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						rrow[nc] <- (n0[i]-sum(rrow[-nc]))
 						rrow[is.na(muTab[i,])] <- 0
 						}
-				browser()
+				
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
