@@ -2,7 +2,7 @@ conSTable <-
 function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),stkSft=NULL,...){#,keepArgs=FALSE
 	
 	checks <- match.arg(checks)
-	
+
 	if(transpose){
 		muTab <- t(muTab)
 		}
@@ -69,7 +69,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 						shift <- as.matrix(do.call(rbind,lapply(1:nrow(muTab),function(i) shift)))
 						}
 					}
-			
+					
 			bounds[,,"Lower"] <- as.matrix(muTab - shift)
 			bounds[,,"Upper"] <- as.matrix(muTab + shift)
 			
@@ -168,6 +168,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						rrow[nc] <- (n0[i]-sum(rrow[-nc]))
 						rrow[is.na(muTab[i,])] <- 0
 						}
+				browser()
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
