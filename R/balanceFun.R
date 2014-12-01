@@ -40,6 +40,7 @@ balanceFBS <- function(FBS,check=FALSE){
 		if(is.null(oset)) {
 			oset <- colSums(mu_Tab[,-c(1:2)],na.rm=T)*20/100
 			oset["Feed"] <- sum(fbs$data[,3],na.rm=T)*min(1-feed[1],feed[2]-1)
+			oset <- abs(oset)
 		}
 		
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)

@@ -102,7 +102,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	### zero rows	
 	## This approach create problems
 	#indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
-	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))&(n0==0)
+	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))
+	if(!all(which(indZero) %in% which(indZero&(n0==0)))) stop("Null Rows must have null row sums!")
+	indZero <- indZero&(n0==0)
 	names(indZero) <- rownames(muTab)
 	if(is.null(names(indZero)) || length(unique(names(indZero)))!=length(indZero)){
 		names(indZero) <- 1:length(indZero)
