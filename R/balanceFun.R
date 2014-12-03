@@ -61,7 +61,7 @@ balanceFBS <- function(FBS,check=FALSE){
        			}
        		}
        	
-       	if(writeTable){
+       	if(writeTable&!is.null(tab)){
        		who <- names(attr(FBS,"countryMap")[match(Country,attr(FBS,"countryMap"))])
        		when <- year
        		tbl <- tab@bestTab
