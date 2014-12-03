@@ -76,8 +76,8 @@ balanceFBS <- function(FBS,check=FALSE){
 #### STOCKSHIFT, WE HAVE TO TALK ABOUT IT, FOR balanceOne 
 
 
-balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
-	balanceFBS <- balanceFBS(FBS)
+balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,check=FALSE,...){
+	balanceFBS <- balanceFBS(FBS,check=check)
 	
 	if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
 			} else if(is.numeric(Country)){
@@ -123,21 +123,21 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,...){
 
 #	Balancing year  2011  (Country  Kazakhstan )
 
-balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,...){
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,check=FALSE,...){
 	require("parallel")
 	return(invisible(mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
-		 balanceCountry(FBS,Country,oset,feedShift,stockShift,...)
+		 balanceCountry(FBS,Country,oset,feedShift,stockShift,check=check,...)
 		 }, mc.cores=ncores)))
 	
 	}
 	
 
-balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,...){
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,check=FALSE,...){
 	require("parallel")
 	return(invisible(mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
-		 balanceCountry(FBS,Country,oset,feedShift,stockShift,...)
+		 balanceCountry(FBS,Country,oset,feedShift,stockShift,check=check,...)
 		 }, mc.cores=ncores)))
 	
 	}
