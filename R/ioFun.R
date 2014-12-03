@@ -18,7 +18,7 @@ readFBS <- function(file,file0=NULL,filef,whichCols=c("Imports.total","Exports.t
 	if(!is.null(filef)){
 		feedConstraints <- read.csv(filef)
 		if(ncol(feedConstraints)>3) {
-			feedConstraints <- feedConstraints[,c(1,3,5,6,7)]
+			feedConstraints <- feedConstraints[,c(1,3,6,7)]#5,
 		} 
 		# Removing duplicated rows
 		feedConstraints  <- feedConstraints[!duplicated(feedConstraints),]
