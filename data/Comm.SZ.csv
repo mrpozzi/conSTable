@@ -44,9 +44,9 @@ Pulses,peas,num,num,num,num,num,num,num,num,
 Pulses,pulses..other,num,num,num,num,num,num,num,num,
 Roots and tubers,cassava.and.products,num,num,num,num,num,num,,num,num
 Roots and tubers,potatoes.and.products,num,num,num,num,num,num,num,num,
-Roots and tubers,roots..other,num,num,num,num,num,num,,num,
-Roots and tubers,sweet.potatoes.and.products,num,num,num,num,num,num,,num,
-Roots and tubers,yams,num,num,num,num,num,num,,num,
+Roots and tubers,roots..other,num,num,num,num,num,num,num,num,
+Roots and tubers,sweet.potatoes.and.products,num,num,num,num,num,num,num,num,
+Roots and tubers,yams,num,num,num,num,num,num,num,num,
 Stimulants and spices,cloves,num,num,num,num,num,,,num,
 Stimulants and spices,cocoa.beans.and.products,num,num,num,num,num,,,num,
 Stimulants and spices,coffee.and.products,num,num,num,num,num,,,num,
@@ -73,5 +73,5 @@ Vegetables (inc. melons),onions,num,num,num,num,num,,num,num,
 Vegetables (inc. melons),tomatoes.and.products,num,num,num,num,num,,,num,
 Vegetables (inc. melons),vegetables.and.products..other,num,num,num,num,num,num,,num,
 Vegetables (inc. melons),melons,num,num,num,num,num,,,num,
-Oilseeds,palm.fruit,,,,,,,,,
-Oilseeds,palm.kernels,num,,num,,,,,,num
+Oilseeds,palm.fruit,,,num,,,,,,num
+Oilseeds,palm.kernels,num,,num,,num,num,,num,num

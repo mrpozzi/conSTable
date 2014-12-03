@@ -13,7 +13,7 @@ detach("package:conSTable")
 
 library(devtools)
 
-install_github("conSTable",username="mrpozzi",ref="develop")
+install_github("mrpozzi/conSTable",ref="develop")
 #install_github("conSTable",username="marcogarieri",ref="master")
 
 # The we can load the package
@@ -33,7 +33,7 @@ FBS_g <- readFBS_group(file_g,file0,filef)
 
 file.Adj <- "Adj.commodityContTab.csv"
 filef.Adj <- "Adj.feedrange.csv"
-FBS.Adj <- readFBS(file.Adj,file0,filef.Adj)
+FBS <- readFBS(file.Adj,file0,filef.Adj)
 
 
 # The command shows the data for Congo in 2008 
@@ -71,7 +71,12 @@ aa <- balanceOne("1",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,obj
 
 balanceOne("Congo",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE)
 balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=TRUE,feedShift=20)
+balanceCountry(FBS,"Congo",oset=NULL,prop=NULL, nIter = 10,verbose=TRUE,feedShift=20)
+balanceCountry(FBS,"Congo",oset=NULL,prop=NULL, nIter = 10,verbose=TRUE,feedShift=20,check=TRUE)
+
 balanceAll(FBS,oset=c(30,30,40,50,50,10000),ncores=1,feedShift=20)
+balanceAll(FBS,oset=NULL,ncores=1,feedShift=20)
+balanceAll(FBS,oset=NULL,ncores=1,feedShift=20,check=TRUE)
 
 balanceOne("Congo",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF = function(tab){-colSums(tab)[1]},verbose=TRUE,checks="none")
 aba <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=TRUE,checks="none")

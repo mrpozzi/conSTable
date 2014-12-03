@@ -23,6 +23,7 @@ balanceFBS <- function(FBS,check=FALSE){
 			}
 		
 		objFeed <- function(feed, objF){
+			bounds <- feed
 			if(length(feed)==1){
 				bounds <- feed * (1+feedShift/100*c(-1,1))
 				} else if(length(feed)!=2) {
@@ -48,7 +49,7 @@ balanceFBS <- function(FBS,check=FALSE){
        	
        	if(check) {
        		while(1) {
-       			if(!is.null(tab@bestTab)) {
+       			if(!is.null(tab)) {
        				fe <- sum(tab@bestTab[,"Feed"])
        				if(fe<fbs$feed[1] || fe>fbs$feed[2]) {
        					warning(paste("Feed falls out of boundaries: ",fe," [",fbs$feed[1],", ",fbs$feed[2],"]. Shrinking bounds."))
