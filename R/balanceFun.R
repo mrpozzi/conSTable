@@ -1,6 +1,6 @@
 ## Here we are close, but that's not exactly what it's needed
 
-balanceFBS <- function(FBS,check=FALSE){
+balanceFBS <- function(FBS,sanityCheck=FALSE){
 	function(Country, year,oset=NULL,objF=NULL,feedShift=20,stockShift=20,writeTable=FALSE,...){
 				
 		if(!is.character(year)) year <- as.character(year)
@@ -15,7 +15,7 @@ balanceFBS <- function(FBS,check=FALSE){
 		feed <- fbs$feed
 		if(is.null(objF)) objF <- function(tab){-colSums(tab)["Food"]}
 		
-		if(check) {
+		if(sanityCheck) {
 			fe <- sum(fbs$data[,3],na.rm=T)
 			if(fe<fbs$feed[1] || fe>fbs$feed[2]) {
 				warning(paste("Feed falls out of boundaries: ",fe," [",fbs$feed[1],", ",fbs$feed[2],"]"))
@@ -47,7 +47,7 @@ balanceFBS <- function(FBS,check=FALSE){
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        	
-       	if(check) {
+       	if(sanityCheck) {
        		while(1) {
        			if(!is.null(tab)) {
        				fe <- sum(tab@bestTab[,"Feed"])
@@ -77,8 +77,8 @@ balanceFBS <- function(FBS,check=FALSE){
 #### STOCKSHIFT, WE HAVE TO TALK ABOUT IT, FOR balanceOne 
 
 
-balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,check=FALSE,...){
-	balanceFBS <- balanceFBS(FBS,check=check)
+balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,sanityCheck=FALSE,...){
+	balanceFBS <- balanceFBS(FBS,sanityCheck=sanityCheck)
 	
 	if(is.character(Country)&&is.na(suppressWarnings(as.numeric(Country)))){Country <- attr(FBS,"countryMap")[Country]
 			} else if(is.numeric(Country)){
@@ -124,21 +124,21 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,check=FAL
 
 #	Balancing year  2011  (Country  Kazakhstan )
 
-balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,check=FALSE,...){
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,sanityCheck=FALSE,...){
 	require("parallel")
 	return(invisible(mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
-		 balanceCountry(FBS,Country,oset,feedShift,stockShift,check=check,...)
+		 balanceCountry(FBS,Country,oset,feedShift,stockShift,sanityCheck=sanityCheck,...)
 		 }, mc.cores=ncores)))
 	
 	}
 	
 
-balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,check=FALSE,...){
+balanceAll <- function(FBS,oset,ncores=1L,feedShift=20,stockShift=20,sanityCheck=FALSE,...){
 	require("parallel")
 	return(invisible(mclapply(names(FBS), function(Country){
 			cat("Balancing Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],"\n")
-		 balanceCountry(FBS,Country,oset,feedShift,stockShift,check=check,...)
+		 balanceCountry(FBS,Country,oset,feedShift,stockShift,sanityCheck=sanityCheck,...)
 		 }, mc.cores=ncores)))
 	
 	}
