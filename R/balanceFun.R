@@ -1,6 +1,6 @@
 ## Here we are close, but that's not exactly what it's needed
 
-balanceFBS <- function(FBS,sanityCheck=FALSE){
+balanceFBS <- function(FBS,sanityCheck=FALSE,maxErr=10){
 	function(Country, year,oset=NULL,objF=NULL,feedShift=20,stockShift=20,writeTable=FALSE,...){
 				
 		if(!is.character(year)) year <- as.character(year)
@@ -47,15 +47,16 @@ balanceFBS <- function(FBS,sanityCheck=FALSE){
 		tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
        	if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        	
+       	count <- 0
        	if(sanityCheck) {
-       		while(1) {
+       		while(count < maxErr) {
        			if(!is.null(tab)) {
        				fe <- sum(tab@bestTab[,"Feed"])
        				if(fe<fbs$feed[1] || fe>fbs$feed[2]) {
        					warning(paste("Feed falls out of boundaries: ",fe," [",fbs$feed[1],", ",fbs$feed[2],"]. Shrinking bounds."))
        					oset["Feed"] <- oset["Feed"]/2
        					} else break
-       				} else break
+       				} else count <- count + 1
        			tab <- conSTable(muTab=mu_Tab, rowTot=row_Tot, shift=cbind(fbs$sd,t(oset%*%t(rep(1,nrow(mu_Tab))))),objFun=objFeed(feed, objF),stkSft=stockShift,...)
        			if(!is.null(tab)) attr(tab,"Production") <- row_Tot
        			}
