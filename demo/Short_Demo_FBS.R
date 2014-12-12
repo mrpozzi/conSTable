@@ -82,3 +82,11 @@ balanceOne("Congo",2008,oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,objF 
 aba <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=TRUE,checks="none")
 balanceAll(FBS,oset=c(30,30,40,50,50,10000),ncores=1,checks="none")
 
+
+
+
+
+tab0 <- balanceOne("299",2008,oset=NULL,prop=NULL, nIter = 100,verbose=TRUE,checks="none",sanityCheck=TRUE)
+tab1 <- balanceOne("299",2009,oset=NULL,prop=NULL, nIter = 100,verbose=TRUE,checks="none",sanityCheck=TRUE)
+
+sum(tab0@bestTab[,7])-sum(tab1@bestTab[,7])

@@ -92,7 +92,7 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,sanityChe
 			} 
 			funK <- function(tab){
 				n0 <- attr(tab,"Production")
-				totFood <- -sum(tab[,"Food"])
+				totFood <- sum(tab[,"Food"])
 				if(!is.null(tab2)){
 					## Here I change from + to - oldTot, since we want that the difference between years has to be less than 150
 					cond <- (abs(totFood - oldTot) >= 150)
