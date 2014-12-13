@@ -92,7 +92,7 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,sanityChe
 			} 
 			funK <- function(tab){
 				n0 <- attr(tab,"Production")
-				totFood <- sum(tab[,"Food"])
+				totFood <- -sum(tab[,"Food"])
 				if(!is.null(tab2)){
 					## Here I change from + to - oldTot, since we want that the difference between years has to be less than 150
 					cond <- (abs(totFood - oldTot) >= 150)
@@ -117,7 +117,35 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,sanityChe
 	for(year in sort(names(FBS[[Country]]))){
 		cat("Balancing year ",year," (Country ",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],")\n")
 		tab <- balanceFBS(Country,year,oset,objF = objectiveFun(res[[yearOld]]$bestTab),feedShift=feedShift,...)
-		if(is.null(tab)) warning(paste("Failed to match condition for year",year,"Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],sep=" "))
+		if(is.null(tab)){
+			warning(paste("Failed to match condition for year",year,"Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],sep=" "))
+			} else if(is.infinite(tab@objective)){
+				newObj <- unlist(lapply(tab@tables,function(tab){
+					oldTot <- sum(res[[yearOld]]$bestTab[,"Food"])
+					n0 <- attr(tab,"Production")
+					totFood <- -sum(tab[,"Food"])
+					
+					delta <- abs(totFood - oldTot) 
+					
+					if(delta >= 150) {
+						return(-delta)
+						} else if(totFood > 3000){
+							return(min(tab[,"Food"])) 
+							} else {
+								return(totFood)
+								}
+					}))
+				bestTabOld <- tab@bestTab
+				tab@bestTab <- tab@tables[[which.min(newObj)]]
+				indZero <- unlist(lapply(1:nrow(bestTabOld),function(i)all(bestTabOld[i,]==0)))
+				names(indZero) <- rownames(bestTabOld)
+				if(is.null(names(indZero)) || length(unique(names(indZero)))!=length(indZero)){
+					names(indZero) <- 1:length(indZero)
+					}
+				row.names(tab@bestTab) <- names(indZero[!indZero])
+				# tab@bestTab <- data.frame(tab@bestTab)[names(indZero),]
+				tab@objective <- abs(min(newObj))
+				}
 		res[[year]] <- tab
 		yearOld <- year
 		}

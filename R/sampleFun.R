@@ -1,5 +1,5 @@
 conSTable <-
-function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),stkSft=NULL,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),stkSft=NULL,maxIters=1000,...){#,keepArgs=FALSE
 	
 	checks <- match.arg(checks)
 
@@ -82,7 +82,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 		
 		 }
 	
-	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,stkSft=stkSft,...)#
+	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,stkSft=stkSft,maxIters=maxIters,...)#
 
 	}
 
@@ -90,7 +90,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 
 
 .sampleTables <-
-function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]}, checks="all",fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,stkSft=20,...){
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]}, checks="all",fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,stkSft=20,maxIters=1000,...){
 
 	call <- match.call()
 	
@@ -177,6 +177,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
+				if(avuoto > maxIters) return(muTab[i,])
 				}
 				if(verbose)cat("*")
 			return(rrow)
