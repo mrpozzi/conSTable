@@ -177,6 +177,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
+				if(avuoto > 1000L) return(muTab[i,])
 				}
 				if(verbose)cat("*")
 			return(rrow)
