@@ -215,6 +215,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			} else {
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
+				if(avuoto > 1000L) return(muTab[i,])
 			}
 		iter <- iter + 1L
         }
