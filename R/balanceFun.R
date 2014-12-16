@@ -120,10 +120,14 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,sanityChe
 		if(is.null(tab)){
 			warning(paste("Failed to match condition for year",year,"Country",names(attr(FBS,"countryMap"))[attr(FBS,"countryMap")==Country],sep=" "))
 			} else if(is.infinite(tab@objective)){
+				
 				newObj <- unlist(lapply(tab@tables,function(tab){
 					oldTot <- sum(res[[yearOld]]$bestTab[,"Food"])
 					n0 <- attr(tab,"Production")
 					totFood <- -sum(tab[,"Food"])
+					
+					fe <- sum(tab[,"Feed"])
+       				if(fe<FBS[[Country]][[year]]$feed[1] || fe>FBS[[Country]][[year]]$feed[2]) return(-Inf)
 					
 					delta <- abs(totFood - oldTot) 
 					
@@ -135,6 +139,7 @@ balanceCountry <- function(FBS,Country,oset,feedShift=20,stockShift=20,sanityChe
 								return(totFood)
 								}
 					}))
+					
 				bestTabOld <- tab@bestTab
 				tab@bestTab <- tab@tables[[which.min(newObj)]]
 				indZero <- unlist(lapply(1:nrow(bestTabOld),function(i)all(bestTabOld[i,]==0)))
