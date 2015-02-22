@@ -1,8 +1,8 @@
 conSTable <-
-function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),stkSft=NULL,...){#,keepArgs=FALSE
+function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]},fixedRows=NULL,fixed=c(),transpose=FALSE,communicate=warnings,checks=c("all","Import","Stock","none"),stkSft=NULL,maxIters=1000,...){#,keepArgs=FALSE
 	
 	checks <- match.arg(checks)
-	
+
 	if(transpose){
 		muTab <- t(muTab)
 		}
@@ -69,17 +69,20 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 						shift <- as.matrix(do.call(rbind,lapply(1:nrow(muTab),function(i) shift)))
 						}
 					}
-			
-			bounds[,,"Lower"] <- as.matrix(muTab - shift)
-			bounds[,,"Upper"] <- as.matrix(muTab + shift)
+					
+			bounds[,,"Lower"] <- as.matrix(muTab - abs(shift))
+			bounds[,,"Upper"] <- as.matrix(muTab + abs(shift))
 			
 			# We need to set the bounds to zero, and then muTab
 			bounds[,,"Lower"][is.na(muTab)] <- bounds[,,"Upper"][is.na(muTab)] <- 0
 			muTab[is.na(muTab)] <- 0
+			
+			### this should never be triggered due to the way we define them.
+			if(any(bounds[,,"Upper"]<bounds[,,"Lower"])) error("Something is wrong with the bounds!!!")
 		
 		 }
 	
-	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,stkSft=stkSft,...)#
+	.sampleTables(rowTot,muTab,bounds,controlCol,nIter=nIter,N=N,sdev=sdev,verbose=verbose,transpose=transpose,fixedRows=fixedRows,fixed=fixed,objFun=objFun,checks=checks,stkSft=stkSft,maxIters=maxIters,...)#
 
 	}
 
@@ -87,7 +90,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 
 
 .sampleTables <-
-function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]}, checks="all",fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,stkSft=20,...){
+function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev=5,verbose=TRUE,objFun=function(tab){-colSums(tab)[1]}, checks="all",fixed=c(),fixedRows=NULL,transpose=FALSE,keepArgs=FALSE,communicate=warnings,stkSft=20,maxIters=1000,...){
 
 	call <- match.call()
 	
@@ -99,7 +102,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 	### zero rows	
 	## This approach create problems
 	#indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))|(n0==0)
-	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))&(n0==0)
+	indZero <- unlist(lapply(1:nrow(muTab),function(i)all(muTab[i,]==0)&all(bounds[i,,1]==0)&all(bounds[i,,2]==0)))
+	if(!all(which(indZero) %in% which(indZero&(n0==0)))) stop("Null Rows must have null row sums!")
+	indZero <- indZero&(n0==0)
 	names(indZero) <- rownames(muTab)
 	if(is.null(names(indZero)) || length(unique(names(indZero)))!=length(indZero)){
 		names(indZero) <- 1:length(indZero)
@@ -149,6 +154,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 				nc<-ncol(muTab)
 				### VARSTOCK structural 0
 				if(all(c(muTab[i,nc],bounds[i,nc,])==0)){
+					
 					nc <- max(which(muTab[i,-nc]!=0))
 					rrow[(1:length(rrow))>nc]<-0
 					
@@ -156,7 +162,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 					
 					rrow[-c(maxTol,(nc+1):length(rrow))] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-c(maxTol,(nc+1):length(rrow))]), sd=sdev[(nc+1):length(rrow)], lower=bounds[i,-c(maxTol,(nc+1):length(rrow)),1],upper=bounds[i,-c(maxTol,(nc+1):length(rrow)),2]))
 					rrow["Imports"] <- -rrow["Imports"]
-					rrow[maxTol] <- (-n0[i]+sum(rrow[-c(maxTol,nc+1:length(rrow))]))
+					rrow[maxTol] <- (n0[i]-sum(rrow[-c(maxTol,nc+1:length(rrow))]))
 					nc<-maxTol
 					rrow[is.na(muTab[i,])] <- 0
 					}else{ 
@@ -164,12 +170,14 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 						#browser()
 						rrow[-nc] <- abs(rtnorm(nc-1, mean=unlist(muTab[i,-nc]), sd=sdev[-nc], lower=bounds[i,-nc,1],upper=bounds[i,-nc,2]))
 						rrow["Imports"] <- -rrow["Imports"]
-						rrow[nc] <- (-n0[i]+sum(rrow[-nc]))
+						rrow[nc] <- (n0[i]-sum(rrow[-nc]))
 						rrow[is.na(muTab[i,])] <- 0
 						}
+				
 				if(rrow[nc]>=min(controlRow[i,]) & rrow[nc]<=max(controlRow[i,])) break
 				avuoto <- avuoto + 1L
 				if(avuoto > 1000L) warning("Running in Circles!!!")
+				if(avuoto > maxIters) return(muTab[i,])
 				}
 				if(verbose)cat("*")
 			return(rrow)
@@ -211,7 +219,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 			}
 		iter <- iter + 1L
         }
-      #browser()
+      
       okTab <- okTab[1:uniqueT]
       bestTab <- okTab[[which.min(unlist(lapply(okTab,objFun)))]]
       row.names(bestTab) <- names(indZero[!indZero])
@@ -249,8 +257,9 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
       	warning("Conditions Violated")
       	if(!"none"%in%checks) return(NULL)
       }
-      rownames(bestTab) <- rownames(muTab)
-      	bestTab$Production <- n0[rownames(muTab)]
+      #rownames(bestTab) <- rownames(muTab[!indZero,])
+      bestTab$Production <- rep(0,nrow(bestTab))
+      bestTab$Production[!indZero] <- n0[rownames(bestTab[!indZero,])]
       return(new("conTa",bestTab=as.matrix(bestTab),tables=okTab,iters=iter,objective=abs(objFun(bestTab)),call=call,args=argz))
       
       }
