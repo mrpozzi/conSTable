@@ -91,14 +91,20 @@
 \Abstract{ 
 
 \noindent 
-In this paper we describe a sampling strategy to generate balanced FBSs.  A FBS is a collection of information from different sources (official and unofficial) prone to measures errors and uncertainties. Our method tries to solve the problem of the balancing of the FBSs in a flexible way, trusting reliable information and re-allocating the uncertainty  over the non-reliable information. Considering agro-economical information in the form of constrains and  objective functions, we are able to produce a unique solution (balanced FBS).
+In this paper we describe a sampling strategy to generate balanced FBSs. 
+ A FBS is a collection of information from different sources (official and unofficial) 
+ prone to measures errors and uncertainties. Our method tries to solve the 
+ problem of the balancing of the FBSs in a flexible way, trusting reliable information 
+ and re-allocating the uncertainty  over the non-reliable information. Considering 
+ agro-economical information in the form of constrains and  objective functions, 
+ we are able to produce a unique solution (balanced FBS).
 }
 
 \Keywords{Food Balance Sheet, FBS, Balancing, Structural Zero}
 \Plainkeywords{Food Balance Sheet, FBS, Balancing, Structural Zero}
 
 \Address{
-  Marco Garieri\\
+  Marco Garieri, Natalia Golini, Luca Pozzi\\
   Economics and Social Statistics Division (ESS)\\
   Economic and Social Development Department (ES)\\
   Food and Agriculture Organization of the United Nations (FAO)\\
@@ -107,6 +113,7 @@ In this paper we describe a sampling strategy to generate balanced FBSs.  A FBS 
   URL: \url{https://github.com/marcogarieri/conSTable/tree/develop}
 }
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+
 \begin{document}
 
 \section*{Disclaimer}
@@ -120,206 +127,110 @@ This paper is dynamically generated on \today{} and is subject to
 changes and updates.
 
 \section{Introduction}
-Missing values are commonplace in the agricultural production domain,
-stemming from non-response in surveys or a lack of capacity by the
-reporting entity to provide measurement. Yet a consistent and
-non-sparse production domain is of critical importance to Food Balance
-Sheets (FBS), thus accurate and reliable imputation is essential and a
-necessary requisite for continuing work. This paper addresses several
-shortcomings of the current work and a new methodology is proposed in
-order to resolve these issues and to increase the accuracy of
-imputation.\\
+The Food Balance Sheet presents the overall description of the food supply 
+and utilization for a specific country in a defined time period. The information 
+provided by the FBSs can be used to analyze the agro-economical 
+condition of a country, in particular to assess food security trends over time 
+for specific regions (FAO et al., 2013). Due to the importance of this information,
+FBSs must be precise and reliable.\\
+FBSs represent the total food supply and utilization for a specific country in a 
+specific year. Unfortunately, as described in "Food Balance Sheets: A handbook" 
+(FAO, 2011), very often the quality and coverage of data is not optimal, varying 
+considerably from country to country. 
+FBSs are assembled from a variety of sources, official or unofficial, and inaccuracies 
+and errors may also be introduced at every level. In case of non-reliable information
+ the data are often estimated or adjusted while, in case of missing value, imputed.
+As a result, the FBSs are unbalanced, i.e., for each commodity in a specified 
+country of the reference period the Total Supply (TS) is not equal to the Total 
+Utilization (TU). Then, the balancing of FBSs is a primary problem within FAO.\\
 
-The relationship between the variables in the production domain by
-definition can be expressed as follow,
+In this paper we introduce a very flexible algorithm to solve the problem of 
+balancing FBSs through sampling steps.  The method proposed respect the 
+balance equation for each rows (as explain in Section 2) and take in 
+consideration of possible constrains, meaningful from a agro-economical 
+point of view, and generate a unique solution on the basis of objective functions. 
+The approach considers all prior information on measurement or estimate 
+uncertainties available, in the form of mean and range around the mean 
+($\pm$ sd) per cell or columns, in case only little information is available.\\
+ The paper is structured as follows. Section 2 describes the FBSs and the 
+ methods used to estimate its components. Section 3 shows an the new 
+ method to balance the FBSs. Section 4 presents a case study and the 
+ conclusions are in Section 5.
+%\begin{table}[h!]
+%  \label{tab:swsflag}
+%  \caption{Description of the flags in the Statistical Working System}
+%  \begin{center}
+%    \begin{tabular}{|c||p{12cm}|}
+%      \hline
+%      Flags & Description\\
+%      \hline
+%      & Official data reported on FAO Questionnaires from countries\\
+%      / & Official data reported on FAO Questionnaires from countries\\
+%      * & Commodity International Organizations\\
+%      X & Commodity International Organizations\\
+%      P & Estimated data using trading partners database\\
+%      F & FAO estimate\\
+%      C & Calculated data\\
+%      B & Data obtained as balance\\
+%      T & Extrapolated/interpolated\\
+%      M & Not reported by country\\
+%      E & Expert sources from FAO (including other divisions)\\
+%      \hline
+%    \end{tabular}
+%  \end{center}  
+%\end{table}
 
-\begin{equation}
-  \label{eq:identity}
-  \text{P}_t := \text{A}_t \times \text{Y}_t \quad\quad P_t \ge 0,\, A_t
-  \ge 0,\, Y_t > 0
-\end{equation}
-
-
-Where $P$, $A$ and $Y$ represent production, area harvested and yield
-of crops, respectively, indexed by time $t$. In the case of livestock,
-$A$ represents number of slaughtered animal while $Y$ represents the
-carcass weight per animal. The yield is, however, unobserved and can
-only be calculated when both production and area are available. For
-certain commodities, harvested area may not exist or sometimes it may
-be represented under a different context.\\
-
-It is important to recognize that when area harvested and production
-are both zero, yield is undefined. Yield is a derived statistic, and
-when we can not observe it through calculation it does not imply it is
-zero. In fact, it is a missing value by the very nature of the
-definition being unobservable yet a value does exist.\\
-
-The primary objective of imputation is to incorporate all
-available and reliable information in order to provide best estimates of
-food supply in FBS.\\
-
-Presented in table \ref{tab:swsflag} is a description of the existing
-flags in the current Statistical Working System (SWS). In this
-exercise, estimated and previously imputed data which are marked as
-either \textbf{F}, \textbf{E} and \textbf{T} are the target values to
-be imputed.\\
-
-\begin{table}[h!]
-  \label{tab:swsflag}
-  \caption{Description of the flags in the Statistical Working System}
-  \begin{center}
-    \begin{tabular}{|c||p{12cm}|}
-      \hline
-      Flags & Description\\
-      \hline
-      & Official data reported on FAO Questionnaires from countries\\
-      / & Official data reported on FAO Questionnaires from countries\\
-      * & Commodity International Organizations\\
-      X & Commodity International Organizations\\
-      P & Estimated data using trading partners database\\
-      F & FAO estimate\\
-      C & Calculated data\\
-      B & Data obtained as balance\\
-      T & Extrapolated/interpolated\\
-      M & Not reported by country\\
-      E & Expert sources from FAO (including other divisions)\\
-      \hline
-    \end{tabular}
-  \end{center}  
-\end{table}
-
-\subsection{Scope of the project}
-%% Need to check 
-A total of 247 commodities requires imputation, 169 commodities from
-the crop domain, 19 in primary livestock and 59 processed
-livestock. There are in total of 245 countries including obsolete
-classifications and territories which result in more than 180,000+
-potential times series to impute.\\
+%\subsection{Scope of the project}
+%%% Need to check 
+%A total of 247 commodities requires imputation, 169 commodities from
+%the crop domain, 19 in primary livestock and 59 processed
+%livestock. There are in total of 245 countries including obsolete
+%classifications and territories which result in more than 180,000+
+%potential times series to impute.\\
 
 
 \FloatBarrier
-\section{Background and Review of the Current Methodology}
+\section{Background and Review of Literature}
 
-There have been two classes of methodology proposed in the past in
-order to account for missing values in the production domain. The
-first type utilizes historical information and implements methods such
-as linear interpolation and trend regression; while the second class
-aims to capture the variation of relevant commodity
-and/or spatial characteristics through the application of
-aggregated growth rates. The imputation is carried out independently
-on both area and production, with the yield calculated implicitly as
-an identity.\\
+The balancing problem is well-known studied in economics literature. Often 
+census-based Input-Output (IO) tables or social-accounting matrixes (SAM) are 
+cases of not balanced tables, i.e., row sums different from and column sums. 
+Some of the most used approach are the Generalized Maximum Entropy (GME) 
+ andthe  Generalized Cross Entropy (GCE) techniques (Robinson et al., 2000, Britz 
+ and Wieck, 2002, Robilliard and Robinson, 2003). In Robinson et al. (2000), the 
+ authors present a flexible Òcross entropyÓ approach to estimate consistent SAMs 
+ starting from data estimated with errors. In this approach the error is a weighed average
+ of known constants. Assumption on the weight, considered as prior, has to be given.
+ However, in GME and GCE techniques, the interpretation of the prior information 
+ remains an unsolved problem. For this reason bayesian approaches have been 
+ proposed to overcome to this problem. In a Bayesian framework the prior information 
+ held by the researcher has a direct and interpretable formulation (Heckelei et al., 
+ 2008, Rodrigues, 2014). However, in this case, a considerable amount of prior 
+ information, not available to us, is necessary   in order to have a unique solution.\\
 
-Nevertheless, both approaches only utilize one dimension of
-information and improvements can be obtained if information usage
-can be married. Furthermore, these methods lack the ability to
-incorporate external information such as vegetation indices,
-precipitation or temperature that may provide valuable information and
-enhance the accuracy of imputation.\\
-
-Simulation results of the prior attempts indicate that linear
-interpolation over small period is a stable and accurate method but it
-lacks the capability to utilize cross-sectional
-information. Furthermore, it does not provide a solution for
-extrapolation where connection points are not available. As a result,
-the aggregation method was then implemented as it was found to provide
-a high coverage rate for imputation with seemingly satisfactory
-performance.\\
-
-In short, the aggregation imputation method computes the
-commodity/regional aggregated growth of both area and production, the
-growth rate is then applied to the last observed value of the
-respective series. The formula of the aggregated growth can be
-expressed as:
-
-\begin{equation}
-  \label{eq:aggregateGrowth}
-  r_{s, t} = \sum_{c \in \mathbb{S}} X_{c, t}/\sum_{c \in \mathbb{S}} X_{c, t-1}
-\end{equation}
-
-Where $\mathbb{S}$ denotes the relevant set of products and countries
-within the relevant commodity group and regional classification after
-omitting the item to be imputed. For example, to compute the
-\textit{country cereal aggregated growth} with the aim to impute wheat
-production, we sum up all the production of commodities listed in the
-cereal group in the same country excluding wheat. On the other hand,
-to impute by \textit{regional item aggregated growth}, wheat
-production data within the regional profile except the country of
-interest are aggregated.\\
-
-
-Imputation can then be computed as:
-\begin{equation}
-  \hat{X}_{c, t} = X_{c, t-1} \times r_{s, t}
-\end{equation}
-  
-
-There are, however, several shortcomings of this methodology. The
-Achilles heel lies in the fact that area and production are imputed
-independently, cases of diverging area harvested and production have
-been observed that result in inconsistency between trends as well as
-exploding yields. The source of this undesirable characteristic is
-nested in the computation of the aggregated growth rate. Owing to
-missing values, the basket computed may not be comparable over time
-and consequently results in spurious growth or
-contraction. Furthermore, the basket to compute the changes in
-production and area may be considerably different.\\
-
-
-\section{Exploratory Data Analysis}
-
-We first take a visualization tour of the data to grasp an
-understanding of the underlying pattern of the production domain and
-the relationship between the variables. The series commence in 1992
-and continues to 2011.
-
-\subsection{Yield}
-
-The next three graph depicts the yield of four selected commodity from
-different commodity group, wheat, grape, okra and beef.\\
-
-
-From the graphs, we can first observe that there is a general
-increasing trend in the yield accross all countries and commodities
-illustrated. Similar stories are observed in almost all commodities
-that has been studied during the development of the methodology. This
-is a result of continuous advancement in both technology and
-agricultural practice driven by research \& development. Improved
-irrigation provides crop with sufficient and uninterrupted water
-source, while tailored compound feed provide the precise nutrient
-requirements ensuring the livestocks consume the optimal diet for
-growth. Regardless whether these practice are sustainable or
-beneficial, there are strong evidence of increased productivity over
-time.\\
+The balancing problem has been associated with the solution of the contingency 
+tables  problem with fixed margins, trying to input individual cell entries and inferring 
+the model's parameters underlying the table (see Dinwoodie and Chen, 2011, 
+Chen, 2007, Chen et al.,  2006, Dobra et al., 2006, Chen et al. 2005, Tebaldi 
+and West, 1998). In Dinwoodie and Chen (2011), the  authors propose a combination
+ of a sequential importance sampling (SIS) with a sequentially updated normal 
+ proposal distribution. And thus, the maximum entropy distribution   is sequentially 
+ approximated. The algorithm, has to sample all the cell conditionally to the constrains, 
+ and for this reason is high memory demanding and the speed depend on the table 
+ dimension. For these reason, and for the assumption of non-negative cell value, 
+ the method is not suitable for our problem of balancing FBSs.\\
 
 
 
-Nevertheless, just like all available technology such as internet, the
-distribution is far from perfect. The adoption of technology depends
-on the access which may be hindered by the presence of patents, or
-restriction imposed by service providers. Imperfect information and
-limit financial resources are also major obstacles for embracing the
-new developments, this is particularly true for countries where the
-majority of the producers are smallholders or rural farming.\\
+\section{FBS structure}
 
-Furthermore, producers faces different constraints and cost. Countries
-such as Brazil and Russia which has a large amount of arable land does
-not bear the same cost for land acqusition in comparison to small
-states such as the Netherlands. The cost translates to different
-pressure to improve productivity and yield. Inovations required are
-also different for countries, wheat breeding for the development of
-drought and diease resistent variety were crucial to withold
-Australia's dry climate.  \\
+As mention before, a FBS represents the TU and the TS of food for a given country in a specified period. Every row is a single (or aggregated) commodity and every column is each element of the Domestic Supply (Production, Imports, Exports and Stock Changes) and the Domestic Utilization (Food, Food Manufacture, Feed, Seed, Waste, and Other Uses). Each cell is a value expressed in thousands of metric tons (see \url{http://faostat3.fao.org/download/FB/FBS/E}).In Figure \ref{tab:fbs_italy_2011}, the first lines of the FBS for Italy in 2011 are presented. 
 
+%\begin{figure}[!ht]
+%  \centering
+%%  \includegraphics[scale = 0.7]{figure/dietterich.png}
+%\end{figure}
 
-Despite the differences among the countries branching from various
-combination of technological advancement and economic condition, these
-factors all contribute towards a positive improvement in productitive
-which can be estimated as an aggregated mixture effect.\\
-
-Forces of nature also play a vital role in the determination of crop
-productivity. However, unlike technological advancement, precipitation
-and temperature are associated more closely to year-to-year variation.\\
 
 %\begin{knitrout}
 %\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
@@ -329,969 +240,263 @@ and temperature are associated more closely to year-to-year variation.\\
 
 %}
 
-%\caption[This figure illustrates the yield of wheat accross all countries, it provide strong support to the facts stated]{This figure illustrates the yield of wheat accross all countries, it provide strong support to the facts stated. First of all, we can observe the concordant increasing trend accross all country where technological innovation such as improved seed, and synthetic nitrogen fertilizer contributed to the increase in productivity. Yet at the same time, we can also observe that the rate of growth differ between countries. The single yield spike in Zambia raises concern on data quality.\label{fig:wheat-yield-explore}}
-%\end{figure}
 
-%
-%\end{knitrout}
-
-
-
-
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-yield-explore} 
-
-%}
-
-%\caption[Unlike the yield of wheat, the yield for grape has remain rather constant over time except a few selective country such as Peru and Azerbaijian]{Unlike the yield of wheat, the yield for grape has remain rather constant over time except a few selective country such as Peru and Azerbaijian. There are a few spikes observed, namely Iraq, the invasion of Iraq may have contributed to the negative shock. The considerable fall in the yield for India is of unknown cause, and potentially a data entry error.\label{fig:grape-yield-explore}}
-%\end{figure}
-
-
-%\end{knitrout}
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-yield-explore} 
-
-%}
-
-%\caption[Shown in this graph are the yield of Okra over time]{Shown in this graph are the yield of Okra over time. We can observe that the data is extremely sparse, further the quality of the data is questionable. Yield growth from less than 10 Hg/Ha to greater than 30 Hg/Ha in a single year for both Bahrain and Senegal is deemed suspicious.\label{fig:okra-yield-explore}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/beef-yield-explore} 
-
-%}
-
-%\caption[Similar to grape, the carcass weight per animal of beef also shows the same pattern of a very modest improvement in yield with a handful of exceptions]{Similar to grape, the carcass weight per animal of beef also shows the same pattern of a very modest improvement in yield with a handful of exceptions.\label{fig:beef-yield-explore}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-
-
-
-\FloatBarrier
-\subsection{Production and Area Harvested}
-
-Although yield plays a vital role in the production process, the
-actual quantity of production is usually dictated by the area sown and
-harvested. The illustrations in this section shows that the production
-series is usually dominated by how much area was planted and
-harvested.\\
-
-In contrast to the simple mechanism of yield where all dominant
-factors contribute towards improving the productivity, the mechanism
-of production is much more unpredictable. \\
-
-Production is determine by area harvested and hence area sown in the
-previous period by the farmer. Which ultimately depends on the
-perception of information and subjective judgement of the
-producer. Production can increase or decrease production as a response
-to the state of the market, wheat field can be substitue to harvest
-sorghum if prices are expected to be high. Further, individual
-entities faces different risk profile, even under the assumption of
-all producers are profit-seeking the risk profile may alter the
-portfolio of products held by the producer. Markets has been known to
-be difficult to forecast, let alone the prediction of human judgement
-is just shy of impossible under curren state of understanding.\\
-
-Only in cases where the commodity is a major staple or exporting item,
-we can observe simple trend explained by the continuous increase in
-demand. On the other hand, commodities which are of relative lesser
-importance, the pattern of the production may display unpredictable
-erratic behaviour.\\
-
-
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/wheat-production-area-explore} 
-
-%}
-
-%\caption[Wheat production and area harvested by country]{Wheat production and area harvested by country. The figure shows that excluding several producers such as India, Nepal, and Pakistan which has a stable trend in production, both the production and area of most countries display erratic behavior.\label{fig:wheat-production-area-explore}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-production-area-explore} 
-
-%}
-
-%\caption[In contrast to wheat, the area for grape is much more stable, a character of tree which takes year to plant and nuture and the alteration of the land use is much more difficult]{In contrast to wheat, the area for grape is much more stable, a character of tree which takes year to plant and nuture and the alteration of the land use is much more difficult. Nonetheless, the production also display different trends over different time period\label{fig:grape-production-area-explore}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-production-area-explore} 
-
-%}
-
-%\caption[Even more so than both wheat and grape, the production of okra appears to demonstrate unpredictable trends and shocks]{Even more so than both wheat and grape, the production of okra appears to demonstrate unpredictable trends and shocks.\label{fig:okra-production-area-explore}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/beef-production-area-explore} 
-
-%}
-
-%\caption[Of all the production, livestock meat such as beef and veal may have been the easiest to predict and impute]{Of all the production, livestock meat such as beef and veal may have been the easiest to predict and impute. There is continuing demand around the world for meat, while shift in production is usually difficult due to the high expenditure in machinery capital. With this being said, we can likewise observe shocks and or period of contraction or expansion over time.\label{fig:beef-production-area-explore}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-
-%% One worthnoting point is that production which display simple pattern
-%% are typically commodities in countries which are highly commercialized
-%% or important for consumption as staple or traded for financial
-%% resources. These item are rarely the one we need to impute as they are
-%% generally complete, it is commodities of lesser importance that are
-%% required to be imputed and as a result that are often harder due to
-%% their unstable demand and nature.\\
-
-
-\FloatBarrier
-\subsection{Data Quality Issues}
-During the development of the methodology, we have encountered several
-data quality issues which required us to review and redefine our
-initial methodology. These are not exceptions, rather they are
-prevalent in the production domain and the analyst should bear in mind
-of these characteristics.
-
-
-\subsubsection{Extremely High Sparsity}
-Although missing values are expected provided the goal of the task is
-to impute missing values, but one may be stunned at the sparsity of
-the data. For commodity such as pepper, merely 20\% of the data are
-observed which raises the question whether imputation remain valid.
-
-\subsubsection{Diverging Trends and shocks}
-Another issue arose from the quality of the data reported and
-recorded. It is not uncommon to observe unexplainable diverging trends
-or shocks of production and area harvested which resulted in exploding
-yield. The yield of Okra for Bahrain and Senegal in figure
-\ref{fig:okra-yield-explore} are prime examples. Coconut production of
-China in 2008 is another example, a change in classification resulted
-in large escalation of production while the area harvested remained
-similar to the previous year resulted in a three-fold increase in the
-yield solely for that particular year.\\
-
-\subsubsection{No indicator distinguish zero, missing values and not application}
-The analyst should be made aware of the fact that although a framework
-does exist to distinguish zero and missing values in the database, in
-practice this may not be the case.\\
-
-
-These observations prompt us to devise a robust method to safeguard
-ourself from non-sensical imputation.\\
-
-
-
-%% Furthermore, these observation are being reported back to the data
-%% collection team to further improve the overall quality of the data.
-
-\FloatBarrier
-\section{Proposed Methodology}
-
-In this section we will provide a detailed explanation of the proposed
-methodology with illustration.
-
-
-
-\subsection{Imputation for Yield}
-
-The determination of yield can be categorise into three components, a
-trend which reflects improvement in technoglogical innovation and
-fluctuation as a result of climate related factors with adhoc events
-such as war and diseases causing shocks to the series. \\
-
-
-Climate effect can be broadly grouped into two category, year-to-year
-variation and cyclical-catastrophical. Year-to-year changes in
-temperature, precipitation will result in small variations around the
-trend while cyclical-catastrophical phenomenon such El Ni\~{n}o will
-appear as shocks. Both are difficult to employ in practice since data
-such as temperature and precipitation suffer problem from period
-matching; using annual data will reduce correlation and create
-spurious noises, while monthly data will have to be matched crop by
-crop by identify the relevant months corresponding to the production
-cycle. \\
-
-Shocks such as war or diseases are difficult to model due to
-the number of events observed in the history is small and the effect
-of each event may be different.
-
-On the other hand, the continuous advacement of technology and
-innovation and increasing productivity can be capture by a simple
-smoothing trend.\\
-
-The proposed methodology for imputing the yield is a linear mixed
-model with splines, the utilization of this model enables all
-information available both historical and cross-sectional to be
-incorporated. This allows us to capture not only the technological
-advancements in a specific commodity, but at the same time the
-relative speed of technological adoption of the country. In addition,
-proposed indicators such as the vegetation index, $\text{CO}_2$
-concentration and other drivers can be tested and incorporated if
-proven to improve predictive power.\\
-
-
-\subsubsection{The model}
-Following the notation of Bates, the general form of the model can be
-expressed as:
-
-\begin{align}
-  (\mathscr{Y}|\mathscr{B} = \mathbf{b}) &\sim
-  \mathscr{N}(\mathbf{X}\boldsymbol{\beta} + \mathbf{Z}\mathbf{b},
-  \boldsymbol{\sigma^2}\mathbf{I})\nonumber \\
-  \mathscr{B} &\sim\mathscr{N}(\mathbf{0}, \boldsymbol{\Sigma_\theta})
-\end{align}
-
-Where the fixed component $\mathbf{X}\mathscr{\beta}$ models the
-effect of exogenous variables when supplied, while the random
-component of $\mathbf{Z}\mathbf{b}$ captures the aggregated effect of
-innovation and improved practice of each specific country and
-commodity. \\
-
-More specifically, the model implemented has the following expression:
-\begin{align}
-  \label{eq:lmeImpute}
-  \text{Y}_{i,t} &= \overbrace{\beta_0 + \sum_{j=1}^{p}\beta_j x_j}^{\text{Fixed effect}} +
-  \overbrace{b_{0} + \sum_{k=1}^{df}b_{k, i}B_{k}(t)}^{\text{Random effect}} +
-  \epsilon_{i,t}
-\end{align}
-
-Where $Y$ denotes yield, $i$ for country, $t$ for time, and $k$ the
-degree of freedom for the B-spline. The fixed effect is left for
-external drivers such as precipitation and temperature.\\
-
-
-To test the number of degree of freedom for spline required to capture
-the presence of possible non-linearity, the algorithm proceed by
-estimating the model with one degree of freedom then continue the
-process by testing the hypothesis whether additional degree of freedom
-is necessary.\\
-
-Imputation is predictive in nature, therefore the test is designed to
-select the model which provides optimal predictive performance. The
-testing is performed by drawing bootstrapped samples and re-fitting
-the model to obtain $b$ sets of prediction errors. Then we test
-whether the newly proposed model has a lower out-of-sample prediction
-error when compared to the benchmark model. The algorithm will test
-iteratively until the proposed model has higher prediction error or
-when the maximum degree of freedom specified has been reached.\\
-
-\begin{gather*}
-  H_0 : d\le0 ,\\
-  H_1 : d>0 .\\
-  \intertext{Where $d$ is defined as follow:}
-  d = \sum_{b=1}^B\left(
-  \frac{1}{N_1}\sum_{i=1}^{N_1}(\hat{Y}_{b, df} - Y)^2 - 
-  \frac{1}{N_2}\sum_{i=1}^{N_2}(\hat{Y}_{b, df + 1} - Y)^2\right)
-\end{gather*}
-
-The B-splines implemented is first degree linear, from the exploratory
-analysis we believe that higher order polynomial are not required. The
-non-linearity can already be captured by having multiple degree of
-freedom, increasing the order would only over-fit the data and can
-display erratic imputation in the tails.\\
-
-
-In essense, the imputation of the yield is based on the overall
-country specific improvements in innovation while also capturing the
-relative advancements in the designated commodity, both accross
-time. Since more information are utilized and pooled together, imputed
-values display stable characteristics while reflecting changes
-resulting from different aspect.\\
-
-
-
-\FloatBarrier
-\subsection{Imputation for Production}
-
-From the exploratory analysis, we can see that the trend and shape of
-production and area harvested are closely related. Nonetheless, both
-the series and missing mechanism can behave very different depending
-on the country and the commodity. Furthermore, there does not seem to
-be any readily usable information for us to model.\\
-
-
-This is partly inherint in the nature of the size of the data which
-compose vast variation of commodity and countries while at the same
-time the relationship maybe too complex to be expressed in a suncinct
-way. This is in contrast to the nature of yield where cross-country
-and cross-commodity information can be pooled together for a better
-informed imputation.\\
-
-Land can be expanded or contracted between different commodities
-depending on the price and expectation of the market, single block of
-land can also be used for multiple commodity. Both market forces and
-personal decisions are relatively unpredicatable which resulted in the
-difficulty of imputation of area harvested and production.\\
-
-This motivates us to employ what is known as ensemble learning to
-impute the production and to deal with the multi-hypothesis
-problem. \\
-
-Given the strong correlation between area harvested and production, we
-have decided to impute production and leave area harvested to balance.
-This is based on expert advice that the production data are often much
-more reliable and comprehensive.\\
-
-In contrast to yield where all countries are imputed by a single model
-to capture cross-country and cross-commodity effects; The production
-imputation is performed country by country.\\
-
-\subsubsection{The algorithm}
-Ensemble learning in its simplest sense, is to build a collection of
-simpler base models or learners which are later combine to obtain the
-composite model or prediction. One of the most famous application was
-the prediction of movie rating competition held by Netflix, which the
-top two performer both used a form of ensemble. \\
-
-
-The method consist of two steps:
-\begin{enumerate}
-  \item Building multiple models/learners.
-  \item Combine the models or predictions.
-\end{enumerate}
-
-
-The ensemble method reduces the risk of choosing a poor model, this
-resembles putting the eggs in different baskets. Thus we reduce the
-risk of implementing a single model which may produce nonsensical
-imputation for a certain subset of data. Moreover, model selection is
-unecessary, since all model are included in the final ensemble.\\
-
-Ensemble as described by Dietterich can mitigate the following
-three issues.
-
-\begin{itemize}
-  \setlength{\itemindent}{1in}
-  \item[\textbf{Statistical:}] Lack of data to identify an unique solution.
-  \item[\textbf{Computational:}] Optimization
-  \item[\textbf{Representational:}] Complex model
-\end{itemize}
-
-
-
+\begin{knitrout}
+%\definecolor{shadecolor}{rgb}{0, 0, 0}\color{fgcolor}
 \begin{figure}[!ht]
-  \centering
-%  \includegraphics[scale = 0.7]{dietterich.png}
+{\centering \includegraphics[width=\maxwidth]{figure/fbs_italy_2011.png} 
+}
+\caption[First lines of the FBS for Italy in 2011.]{First lines of the FBS for Italy in 2011.
+\label{tab:fbs_italy_2011}}
+
 \end{figure}
-
-
-The statistical problem refers to the lack of data to support a
-particular hypothesis. The problem can be formulated as finding the
-best hypothesis among competing models in the space
-$\mathbf{\mathcal{H}}$. In the top left graph of the following
-depicion from Dietterich we can see that hypothesis within the blue
-boundary will give the same fit, and there is insufficient information
-to determine which one is better. By combining the models, we may
-reduce the risk of choosing a terrible model. If we only observe two
-data points for a country, then fitting a linear line or a log curve
-can both give the same fit and we may have no information to
-distinguish the two.\\
-
-The second problem which is lesser of an issue for our task is the
-computational problem which applies to model which employs greedy
-algorithm such as step-wise regression and classification tree. The
-search within the hypothesis space at each step is local and thus has
-a high probability of failing to achieve global maximum.\\
-
-The final problem, representational, refers to the fact that the true
-function $f$ can not be represented by any of the model. However, by
-combining the models we may expand the space of representable
-functions and potentially approximate the true function $f$ if it
-exist. Take the production of beef in Oman and Vietnam for example, if
-the production of a country has been growing at a linear rate in the
-past, but expands rapidly in recent time, neither linear or
-exponential model will provide a satisfactory result. However, an
-ensemble combining a linear and exponential model will provide a good
-solution by capturing different characteristics of the data.\\
-
-From an integration point of view, the algorithm is adaptive in the
-sense that if the data generating mechanism changes in the future, the
-method will shift weights to models which better present the data and
-thus reducing the need of constant monitoring and updating of
-methodologies.\\
-
-The model can also be seen as a mixture of different
-expectations. From prior discussion, we know that the area and
-production depends on the perception and cognition of information
-leading to optimal judgement. However, even the same information can
-lead to various decision as the information can be interpreted
-differently and the model attempts to capture the difference in the
-judgement by combining various expectation.\\
-
-
-
-\FloatBarrier
-
-
-The details of the ensemble implemented is describe here, the base
-learner are listed in increaseing order of complexity. An effective
-ensemble will have base models as diverse as possible. If there are no
-diversity and all model generates similar result, then a correction
-and the variance reduction property of the ensemble model will be
-poor. The component chosen here range from no parameter global fitting
-to flexible model which can capture local behaviours.\\
-
-\begin{itemize}
-  \item {\textbf{Base learners:}}
-    \begin{itemize}
-      \setlength{\leftmargini}{5em}
-      \item[Mean:] Mean of all observations
-      \item [Linear:] Linear Regression
-      \item [Exponential:] Exponential function
-      \item [Logistic:] Logistic function        
-      \item [Naive:] Linear interpolation followed by last observation
-        carried forward and backward.
-      \item [ARIMA:] Autoregressive Integrated Moving Average model
-        selected based on the AICC, and imputation via Kalman Filter.
-      \item [LOESS:] Local regression with first degree local
-        polynomial and sample size variant window.
-      \item [Splines:] Cubic spline interpolation.
-      \item [MARS:] Multivariate Adaptive Regression Spline
-    \end{itemize}
-  \item {\textbf{Combiner:}}
-    non-trainable algebraic combiner - Weighted sum rule
-
-    %% Type I: Standard
-    \begin{align}
-      p_n(x) &= \sum_{i=1}^K w_i f_{n, i}(x) \nonumber \\
-      w_i &= \frac{\sum_{i = 1}^N(1/|f_{n, i}(x) - x|)^2}{\sum_{K}\sum_{i=1}^n(1/|f_{n, i}(x) - x|)^2}\nonumber
-    \end{align}
-    
-    %% Type II: Shrinkage
-    %% \begin{equation}
-    %%   u_j(x) = \sum_{i=1}^N w_i f_{n, j}(x) \qquad w_i = 0 \quad
-    %%   \text{if} \quad d_{n,j}(x) < k \nonumber
-    %% \end{equation}
-    
-\end{itemize}
-
-Where the weights ($w_i$) of model $i$ depends on the corresponding
-fit ($f_{n, i}(x)$) on the available data with a ceiling set at
-70\%. The naive imputation which does not have a fitted model always
-take uniform weights. A much more favourable method is to compute
-weights based on the prediction error obtained from bootstrap or
-jackknife, yet the missing values restrict us to draw any reasonable
-size for sub-sample fitting. This is further penalized by the time
-series nature of the data where boostrap with replacement is not
-possible.\\
-
-In this section, we take a sample of production from the exploratory
-analysis section and illustrate the imputation methodology. The
-selection of the sample is intended to illustrate the flexibility and
-robustness of the methodology, rather than based on the importance nor
-the quantity of the product.\\
-
-The black points in the graph represents observed data while the
-thicker blue line represents the final ensemble model with the points
-being the estimation of missing values. Other lines represents the fit
-of the component models, the weight of each model is displayed in the
-legend.\\
-
-Component models which failed to fit the data has a weight of 0.\\
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/wheat-swaziland-impute} 
-
-%}
-
-%\caption[This selected series is the production of wheat in Swaziland, from the black observed production we can see that no data has been observed in the paste 10 years]{This selected series is the production of wheat in Swaziland, from the black observed production we can see that no data has been observed in the paste 10 years. Yet, the ensemble fits several possible extrapolation which all seem reasonable. Yet, we can see that although the linear regression obtained the highest weight the ensemble is safe guarded by naive imputation and spline so it does not go below zero.\label{fig:wheat-swaziland-impute}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/wheat-madagascar} 
-
-%}
-
-%\caption[In contrast to swaziland, the wheat production in Mauritania exhibits a simple shape]{In contrast to swaziland, the wheat production in Mauritania exhibits a simple shape. Almost equal weights were allocated to model which did not fail.\label{fig:wheat-madagascar}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-zimbabwe} 
-
-%}
-
-%\caption[In this depiction, the grape of Zimbabwe is used for illustration]{In this depiction, the grape of Zimbabwe is used for illustration. In the case where there is not sufficient amount of data, the ensemble will collapse to form a simple model with strong agreements between the models.\label{fig:grape-zimbabwe}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-kuwait} 
-
-%}
-
-%\caption[This time series for the grape productionn in Kuwait also displays simple exponential like growth]{This time series for the grape productionn in Kuwait also displays simple exponential like growth. Here, the smooth LOESS model obtained the highest weight and in fact reached the ceiling of 70 percent. The exponential failed because the default model requires that at least one point need to be observed at the first and the last 5 time point. This is to prevent the exponential model imputing values which are not supported by the data.\label{fig:grape-kuwait}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-ghana} 
-
-%}
-
-%\caption[There appears to be a gap in the series of the production of Okra for Iraq]{There appears to be a gap in the series of the production of Okra for Iraq. Most model collapse to a straight line close to the mean of the series, but both spline and loess captured the possible downward trend which is reflected in the dent in the final ensemble. \label{fig:okra-ghana}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-barbados} 
-
-%}
-
-%\caption[Finally, a more complex example is shown here, the series is the production of Okra in Barbados]{Finally, a more complex example is shown here, the series is the production of Okra in Barbados. There were a few observation in the beginning of the series, then in the center of the time series the production doubled before falling to prior level. A relative complex model is required to fit such a time series, loess took most of the weight with the remaining weight assigned equally to other model.\label{fig:okra-barbados}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-\FloatBarrier
-
-The examples demonstrates that the model is flexible, able to capture
-from the simplest linear trend to more complex behaviours without the
-need for model selection. Further, with carefully selected and fine
-tuned component models, the ensemble will exhibit extremely robust
-characteristics.
-
-
-\FloatBarrier
-\subsection{Imputation for Area Harvested}
-
-After the imputation of production and yield, area harvested is left
-to balance to satisfiy the identity equation.\\
-
-
-\subsection{Use of external variables}
-The proposed methodology does not employ any other variables for
-several reasons. First, the external variables may also contain
-missing value and often they may actually in fact be more sparse than
-the dataset we are trying to impute. Secondly, the selection of
-variables may be difficult. Difference in commodity nature, market
-structure, commercialization and other conditions calls for different
-information set for prediction. Finally, even if a set of data can be
-selected, the use of external variables will require large resources
-to maintain and specific design set up to be used under various
-imputation setting.\\
-
-
-\section{Case Studies}
-
-The imputation of the three commodities are presented in this
-section. Due to the limitation that this is a dynamic generated paper
-we have only include the cross-country information for the imputation
-of the yield.
-
-
-\subsection{Wheat}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/wheat-yield-imputed} 
-
-%}
-
-%\caption[We can see the imputation of yield in purple seems to produce reasonable values]{We can see the imputation of yield in purple seems to produce reasonable values.\label{fig:wheat-yield-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/wheat-production-imputed} 
-
-%}
-
-%\caption[There does not appear to be any peculariy in any of the imputation of the production of wheat]{There does not appear to be any peculariy in any of the imputation of the production of wheat.\label{fig:wheat-production-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/wheat-areaharvested-imputed} 
-
-%}
-
-%\caption[The balance of area harvested also does not show any sign of divergence or problematic symptoms]{The balance of area harvested also does not show any sign of divergence or problematic symptoms.\label{fig:wheat-areaharvested-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\FloatBarrier
-%\subsection{Grape}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-yield-imputed} 
-
-%}
-
-%\caption[The imputation of yield also appears to be reasonable, even in the case for Iraq the linear mixed model is not severely influenced by the one off event]{The imputation of yield also appears to be reasonable, even in the case for Iraq the linear mixed model is not severely influenced by the one off event.\label{fig:grape-yield-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-production-imputed} 
-
-%}
-
-%\caption[The imputation of grape prodution]{The imputation of grape prodution.\label{fig:grape-production-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/grape-areaharvested-imputed} 
-
-%}
-
-%\caption[Imputation of area harvested of grape]{Imputation of area harvested of grape. The area harvested does appear to be problematic, mostely resembling the trend of the production.\label{fig:grape-areaharvested-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-
-
-\FloatBarrier
-%\subsection{Okra}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-yield-imputed} 
-
-%}
-
-%\caption[The imputation of yield also appears to be reasonable, here once again we see the robustness of linear mixed model not being influenced by the bad data quality of both Senegal and Bahrain]{The imputation of yield also appears to be reasonable, here once again we see the robustness of linear mixed model not being influenced by the bad data quality of both Senegal and Bahrain.\label{fig:okra-yield-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-production-imputed} 
-
-%}
-
-%\caption[The imputation of okra prodution]{The imputation of okra prodution.\label{fig:okra-production-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/okra-areaharvested-imputed} 
-
-%}
-
-%\caption[Imputation of area harvested of okra]{Imputation of area harvested of okra. The area harvested of Viet Nam does appear to be problematic, the unexpectantly high area harvested is a result of an extremely low yield in the earlier years. This is due to the fact that long extrapolation for over 40 years with only approximately 10 years of data is unreasonable. We can eliminate this problem if we restrict the working data to the past 3 decades.\label{fig:okra-areaharvested-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-
-\FloatBarrier
-\subsection{Beef}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-
-%%{\centering \includegraphics[width=\maxwidth]{figure/beef-yield-imputed} 
-
-%}
-
-%\caption[Imputation of beef carcass weight]{Imputation of beef carcass weight. .\label{fig:beef-yield-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/beef-production-imputed} 
-
-%}
-
-%\caption[Imputation of Beef production]{Imputation of Beef production.\label{fig:beef-production-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-%\begin{knitrout}
-%\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!ht]
-
-%
-%%{\centering \includegraphics[width=\maxwidth]{figure/beef-areaharvested-imputed} 
-
-%}
-
-%\caption[Imputation of number of animals slaughtered]{Imputation of number of animals slaughtered.\label{fig:beef-areaharvested-imputed}}
-%\end{figure}
-
-%
-%\end{knitrout}
-
-%
-
-
-
-
-
-
-\FloatBarrier
-
-From the case studies, we can see that we have an extremely flexible
-model with almost no possibility of over-fitting since none of the
-model are itself complex. The model is robust as a result of the
-variance reduction property of ensemble and even in cases where we
-have extremely sparse data we can still fall back to simpler models
-with fewer assumption.\\
-
-
-The model is not only flexible in adapting to change in the data
-generating mechanism, but at the same time flexible to accommodate
-further models in which we consider appropriate. Any model which
-offers diversity and additional predictive power can be included to
-further enhance the ensemble.\\
-
-
-\FloatBarrier
-\section{Simulation Styudy}
-
-In order to understand the performance and characteristics of the
-imputation, we have conducted simulation to estimate the prediction
-error of the imputation.\\
-
-For each bootstrap, we take a sample containing only official and
-semi-official data and impute the values which are missing. The
-imputation is then benchmarked with the actual observed official and
-semi-official data. We use the Mean Absolute Percentage Error (MAPE)
-for assessing the accuracy of the imputed values; and we compute the
-coverage rate defined as the proportion of missing value imputed to
-examine the applicability of the method.
-
-\begin{equation}
-  \text{MAPE} = \frac{1}{N} \sum \left|\frac{y_i -
-    \hat{y}_i}{y_i}\right|\\
+\end{knitrout}
+
+\subsection{Balancing equation}
+The term "balancing table" refers to the attempt to balance accounts 
+in each country for each commodity between its supply (Production, 
+Imports, Stock Changes and Exports) and its uses (Food, Food Manufacturing, 
+Feed, Seed, Waste,  and Other Uses).\\
+For each commodity $i$ in a given country $c$ at time $t$ the Total Supply 
+(TU) and the Total Domestic Utilization (TU) are described as following: 
+
+\begin{align}
+	{\text TS}_{c,t,i} &= {\text Production}_{c,t,i} + {\text Imports}_{c,t,i} 
+	+ {\text StockVar}_{c,t,i} - {\text Exports}_{c,t,i}\\
+	{\text TU}_{c,t,i} & = {\text Food}_{c,t,i} + {\text FoodManu}_{c,t,i} 
+	+ {\text Feed}_{c,t,i} + {\text Seed}_{c,t,i} + {\text Waste}_{c,t,i} 
+	+ {\text OtherUses}_{c,t,i}
+\end{align}
+
+Where with ${\text StockVar}_{c,t,i}$ we consider the difference between 
+the level of stock at time $t$ and time $t-1$. In order to have a "balanced" 
+or "closed" FBS the following balance identity needs to hold:
+
+\begin{equation}\label{eq}
+{\text TS}_{c,t,i} = {\text TU}_{c,t,i} \quad\quad \forall i
 \end{equation}
 
+The identity \ref{eq} is often not respected, due to the uncertainty of data, 
+as explained in the previous section. Mahjoubi and Prakash (2012) and 
+FAO (2014)
 
-Each simulation draws a sample of varying missing proportion, this is
-to investigate the prediction error over different degree of
-missingess and at the same time to detect the breaking point of the
-method.\\
+\subsection{Methods for  estimate TS and TU}
+Apart from Production and trade (Imports and Exports), which are collected 
+through questionnaires, all  other elements of the FBS are usually estimated 
+and official data are available only for very few developed countries (Mahjoubi 
+and Prakash, 2012, and FAO, 2014).
 
-Since there are already missing value in the data, the benchmark is
-can only be computed on the available official and semi-official data
-which varies between commodity. We have over 70\% availability of
-benchmark observations for wheat, while only slightly over 20\% for
-pepper.\\
+\subsubsection{Production and trade}
+Due to these elements' reliability, these elements drive the FBS production system. 
+Consequently, data collection efforts, especially in the Production domain, that 
+rely on questionnaire response, remain key. The information that FBS supplies 
+ultimately can only be as good as the core underlying data, and concerted action 
+is required to improve data inflows.\\
+
+More can be said about Production imputation, reference Michael's paper.
+
+\subsubsection{Food}
+This term represents the total supply of all agricultural and derived products 
+available for human consumption. Food available can be reported in terms of 
+primary product equivalent such as wheat and milk or in the form that the products 
+may actually be consumed, such as bread and cheese. This number is typically 
+the residual of the balance sheet. However, due to uncertainty surrounding many 
+other elements of the balance and because of weak methods and outdated 
+parameters, food is not the only residual element. In order to have an accurate 
+estimate for food measurement  a methodological framework for incorporating 
+information from other existing statistical sources of information, i.e. Nationally 
+representative Household Survey (NHS) is under development. \\
+
+Jim work. Reference as soon as available.
+
+\subsubsection{Food Processing}
+This term, also known as Food Manufacturing, is the amount of a commodity 
+processed for food purposes and for which separate entries are provided in the 
+FBSs either in the same commodity tree or in another food commodity. This 
+helps to maintain the concept of accounting for all foods (once and only once) 
+and maintains the links in the various levels of the balance sheets.
+
+\subsubsection{Feed}
+This term represents the quantity of the commodity available for feeding to 
+livestock and poultry during the year. Less than 15\% of the countries respond 
+to FAOÕs feed questionnaire and most of them are developed countries. For the 
+rest of the world, a new method was developed. It is divided in two steps: 
+\begin{itemize}
+\item[i] determine feed requirements for metabolizable energy and protein 
+\item[ii] determine allocation of compound/concentrate feedstuffs to match 
+requirements. 
+\end{itemize}
+
+See FAO (2014) for more details, and reference Onno work.
+
+\subsubsection{Seed}
+Among the different categories of utilization, Seed use is one of the few categories 
+which can be modeled a priori according to a deterministic rule, animal feed is 
+possibly another. Seeding rates, and ultimately the demand for seed, can be modeled 
+as a function of target plant density, establishment percentage, and seed weight. 
+Multiplied by area planted, seed use can then be derived. However, with the rise 
+in high-precision commercial farming, many farmers are choosing to use certified 
+seed, purchased from specialized seed farmers. This trend requires the need to 
+capture commercial seed production quantities.\\
+
+Reference Josh work. 
+
+\subsubsection{Waste}
+This term is the amount of the commodity lost through wastage during the year 
+at all stages between farms and the household level in handling, storage and transport, 
+but not including waste in the edible and inedible part of the commodity which occurs 
+after the commodity has entered the household. The quantities lost during processing 
+are also not included under this element because they are implicitly considered in applying 
+the underlying extraction rate. Waste data have been reviewed for some 140 developing 
+countries. It can be seen that the coefficients developed to calculate waste in FAOSTAT 
+(waste is calculated as a percentage of total supply) have been constant for many years. 
+Moreover, the review shows inconsistencies in the waste parameters among countries, 
+and commodities within countries.\\
+
+Reference Klaus work.
+
+\subsubsection{Other Utilization}
+This term is a miscellaneous category to account for all other uses not identified 
+elsewhere (e.g. the use of maize to produce ethanol). This category also includes 
+consumption by those who are not accounted in the countryÕs population 
+(e. g., tourists).\\
+
+Reference Jim work on tourism. 
+
+\subsubsection{Stock Changes}
+Limited information exists on opening or closing stocks for many commodities in 
+many countries, making stocks estimation complicated and imprecise. As a result, 
+stock changes are often calculated to smooth supply and utilization. In practice, 
+they are used as a balancing factor and they may, in part, be calculated residually 
+by first estimating food available for consumption. As the item is partially and 
+residually derived it then reflects not only stock changes but also other statistical 
+errors in the food balance equation.
+
+\section{An alternative approach to balance FBSs}
+\subsection{Problem formulation}
+A generale FBS looks like the following
 
 
-Here is the table for the result of the simulation, 50 boot strap
-samples were drawn for each scenario. The final percentage error is
-calculated as the average of all the bootstrapped error within the
-group. The missing percentage for grapes and beef were higher than
-20\% already and thus a simulation was not possible for the group of
-20\% missing proportion.
-
-\begin{table}
-  \centering
-  \label{tab:simResult}
-  \caption{Simulation result for the imputation methodology.}  
-  \begin{tabular}{|c|c|c|c|}
-    \hline
-    Commodity & Total Missing Proportion & Effective Missing Proportion & MAPE (\%)\\
-    \hline \hline
-    \multirow{4}{*}{Wheat}
-      & 30.9\%  & 20\% & 3.68\\
-      & 48.1\%  & 40\% & 7.84\\
-      & 65.4\%  & 60\% & 13.01\\
-      & 82.7\%  & 80\% & 25.19\\
-    \hline
-    \multirow{4}{*}{Grapes}
-      & 39.5\%  & 20\% & 4.49\\
-      & 54.6\%  & 40\% & 9.31\\
-      & 69.7\%  & 60\% & 14.63\\
-      & 84.9\%  & 80\% & 21.69\\
-    \hline
-    \multirow{4}{*}{Beef}
-      & 57.4\%  & 20\% & 1.04\\
-      & 68.1\%  & 40\% & 2.32\\
-      & 78.7\%  & 60\% & 4.15\\
-      & 89.4\%  & 80\% & 7.67\\
-    \hline 
-  \end{tabular}
+\begin{table}[h!]
+  \label{tab:example}
+  \caption{Scheme of the FBS}
+  \begin{center}
+    \begin{tabular}{|c||c|c|c|c|c|c||c|}
+      \hline
+       & $L_1$&$L_2$&$\dots$&$L_j$&$\dots$&$L_s$&$Tot Rows$\\
+       \hline\hline
+       $C_1$ & $x_{11}$&$x_{12}$&$\dots$&$x_{1j}$&$\dots$&$x_{1s}$&$R_1$\\
+       \hline
+        $C_2$ & $x_{21}$&$x_{22}$&$\dots$&$x_{2j}$&$\dots$&$x_{2s}$&$R_2$\\
+        \hline
+        $\dots$ & $\dots$&$\dots$&$\dots$&$\dots$&$\dots$&$\dots$&$\dots$\\
+        \hline
+        $C_i$ & $x_{i1}$&$x_{i2}$&$\dots$&$x_{ij}$&$\dots$&$x_{is}$&$R_i$\\
+        \hline
+        $\dots$ & $\dots$&$\dots$&$\dots$&$\dots$&$\dots$&$\dots$&$\dots$\\
+        \hline
+        $C_r$ & $x_{r1}$&$x_{r2}$&$\dots$&$x_{rj}$&$\dots$&$x_{rs}$&$R_r$\\
+        \hline\hline
+        $Tot Cols$ & $T_{1}$&$T_{2}$&$\dots$&$T_{j}$&$\dots$&$T_{s}$&Tot\\
+      \hline
+    \end{tabular}
+  \end{center}  
 \end{table}
 
+Each row $C_i$ represents a commodity and each column $L_j$ represents a level, both supply or utilization.  The table satisfies the following identities:
 
-\FloatBarrier
-\section{Conclusion}
+\begin{align}
+	R_i &= \sum_{j=1}^{s}x_{ij}\\
+	T_j & = \sum_{i=1}^{r}x_{ij}\\
+	Tot & = \sum_{i=1}^{r} R_i = \sum_{j=1}^{s} T_j = \sum_{i=1}^{r}\sum_{j=1}^{s}x_{ij}
+\end{align}	
 
-In this paper, we have proposed a new complete framework to impute the
-production domain which encompase the production, area harvested and
-yield. Due to the size of the project scope, flexibility and
-robustness were essential elements of the model developed.
+First of all, we assume that for each commodity $C_i$, its total row  $R_i$ is fixed. 
+This means that we rearrange the balancing identity shown in \ref{eq} placing to 
+the left of the equation the terms that come from official sources, hereafter called 
+consolidated terms, and to right those coming from unofficial sources. In our 
+example, Production is the only consolidated term. Then, the balancing identity
+ \ref{eq} can be rewritten in the following way:
 
-Demonstration shows that the two proposed models tailored were
-successful in solving problems faced by previous methodology. The
-linear mixed model for spline allows historical trend, cross-country
-and cross-commodity information to all be utilized. Further, the
-pooled information also enpowered the model to be safe-guarded by
-outliers observed in the data. The ensemble tackles the problem in an
-entirely different way as the correlation structure and behaviour does
-not resemble those of the yield. Yet, the result is the same, model
-were robust and flexible to accommodate anything from a simple trend
-to complex time series.
+\begin{align}
+	{\text Production}_{c,t,i} = & - {\text Imports}_{c,t,i} - {\text StockVar}_{c,t,i} + 
+	{\text Exports}_{c,t,i} \\
+	 & + {\text Food}_{c,t,i} + {\text FoodManu}_{c,t,i} 
+	+ {\text Feed}_{c,t,i} + {\text Seed}_{c,t,i} + {\text Waste}_{c,t,i} 
+	+ {\text OtherUses}_{c,t,i}
+\end{align}	
 
-Despite the outcome seemingly promising, there are still shortcomings
-in the model. The proposed linear mixed model for yield does not have
-the ability to seize the year-to-year variation displayed. Further,
-the three variables are still modelled separately. A fully integrated
-framework which models the whole identity equation is desirable.
+where ${\text StockVar}_{c,t,i} = {\text Stock}_{c,t,i} - {\text Stock}_{c,t-1,i}$. Then the FBS assumes the form of the following table:
+
+\begin{table}[h!]
+  \label{tab:fbstab}
+  \caption{Scheme of the FBS}
+  \begin{center}
+    \begin{tabular}{|c||c|c|c|c|c|c|c|c|c||c|}
+      \hline
+       & Imps&StockV&Exps&Food&FoodM&Feed&Seed&Waste&Other&Production\\
+       \hline\hline
+       $C_1$ & $x_{11}$ & $x_{12}$ & $x_{13}$ & $x_{14}$ & $x_{15}$ & $x_{16}$ & $x_{17}$ & $x_{18}$ & $x_{19}$ & $R_{1}$\\
+       \hline
+       $C_2$ & $x_{21}$ & $x_{22}$ & $x_{23}$ & $x_{24}$ & $x_{25}$ & $x_{26}$ & $x_{27}$ & $x_{28}$ & $x_{29}$ & $R_{2}$\\
+       \hline
+        $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$\\
+        \hline
+       $C_i$ & $x_{i1}$ & $x_{i2}$ & $x_{i3}$ & $x_{i4}$ & $x_{i5}$ & $x_{i6}$ & $x_{i7}$ & $x_{i8}$ & $x_{i9}$ & $R_{i}$\\
+       \hline
+        $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$\\
+        \hline
+       $C_r$ & $x_{r1}$ & $x_{r2}$ & $x_{r3}$ & $x_{r4}$ & $x_{r5}$ & $x_{r6}$ & $x_{r7}$ & $x_{r8}$ & $x_{r9}$ & $R_{r}$\\
+        \hline\hline
+        $Tot Cols$ & $T_{1}$&$T_{2}$&$T_{3}$&$T_{4}$&$T_{5}$&$T_{6}$&$T_{7}$&$T_{8}$&$T_{9}$&Tot\\
+      \hline
+    \end{tabular}
+  \end{center}  
+\end{table}
+
+In the same way, if we believe that the consolidates terms are more than one, i.e. Production and trade (Imports and Exports), the balancing identity can be rewritten as follows:
+
+\begin{align}
+	{\text Production}_{c,t,i} + {\text Imports}_{c,t,i} - {\text Exports}_{c,t,i} & =  {\text StockVar}_{c,t,i} + {\text Food}_{c,t,i}\\
+	 & + {\text FoodManu}_{c,t,i} + {\text Feed}_{c,t,i} + {\text Seed}_{c,t,i} \\
+	 & + {\text Waste}_{c,t,i} + {\text OtherUses}_{c,t,i}
+\end{align}	
 
 
-\section{Further Improvements}
-An ongoing project is dedicated to the designation of weights
-reflecting the information content of the observations. Data collected
-from official and semi-official sources may be deems as more reliable
-while observation from expert judgement may be less reliable. A
-weighting scheme will allow the models to better assess the quality of
-information and improve the performance.\\
+In this way, we consider data from official sources as highly accurate and reliable data, 
+while those from non-official sources prone to potential measurement errors. 
+The latter are often estimated or adjusted with a certain degree of error that depends 
+on differing concepts, definitions, and methodologies involved in data gathering and 
+generation among countries (Jacobs and Sumner, 2002). For these reasons, the 
+consolidated terms may change from country to country, and from year to year. \\Then, we assume that all ammounts  $x_{ij}$ are measured with an additive error:
+\begin{equation}
+y_{ij}= x_{ij}+e_{ij} \quad\quad    \forall i,j
+\end{equation}
 
-Further, to capture the year-to-year variation of the yield, a pilot
-experienment for utilizing remote sensing data is tested. The
-temperature and precipitation published by the World Bank does not
-have both the temporal and spatial resolution to accurately estimate
-the variation. We are making an attempt to match the precipitation and
-teperature to specific crops by combining information from satelite
-images of Normalized Differenced Vegetation Index (NDVI) and rainfaull
-both from NASA.
+where $y_{ij}$ represents the true commodity value and $e_{ij}$ is the difference 
+between the measured value and its true value.\\As discussed in Robinson et al. (2000), the classical assumptions made in 
+regression analysis ${\text Cov}(x_{ij},e_{ij})=0$ with $e_{ij}\sim  \mathscr{N} (0,\sigma^2 )~~\forall i,j$ are extremely constraining when little is known about the error of structure and data are scarse.
+Even if a normal distribution can be attributed to $e_{ij}$, the assumption of zero mean 
+seems not realistic in our case.\\To take into account the measurement error of the individual cells ($x_{ij}$), we assume 
+for these values a Normal truncated distribution:
+\begin{equation}
+x_{ij} \sim TN (\mu_{ij},\sigma_{ij}^2)
+\end{equation}
+
+%The values of each $\mu_{ij}$ are the results of the estimation methods used for the elements of the TS and TU (see Subsection 2.2). Instead, the standard deviation reflects the degree of uncertainty that the researcher has on estimaed value µ_ij. Then, it is very important for the researcher have a good understanding of the data, to know then how from which country they are they was generated or collected.%Note that how this allows us to integrate the inaccurate information, represented by the estimated mean with a measure or how much each value is trusted and with expert knowledge which informs us the bounds of the cell value. The shape of the distribution will change depending on the prior information the researcher has for that particular commodity C in that particular level L. Those levels, which have measured with more accuracy, will have a narrower distribution, otherwise the researcher will use a more vague and uniform-like prior. Because a FBS often contains values that are null with certainty, i.e., quantities of processed seed use are not measured in the amount of eggs, we allow some cells x_ij to be constrained to be null. We call those elements structural zeros. %Also, beacuse the column totals T_j are not fixed, the range of the possible outcomes for T_j is given by experts as the interval  (t_(j,min),t_(j,max)).  Since the only strong constraint is the one on the row totals, we need to choose a strategy to 
 
 
 \section*{Acknowledgement}
 This work is supervised by Adam Prakash with assistance from Josef
-Schumidhuber, Nicolas Sakoff, Onno Hoffmeister, Luigi Castaldi, and
-Hansdeep Khaira whom were crucial in the development of the
-methodology. The author would also like to thank the team members
-which participated in the previous discussions providing valuable
-feedbacks.
+Schumidhuber, Onno Hoffmeister, Salar Tayyib  whom were crucial in 
+the development of the methodology. The author would also like to thank 
+the team members which participated in the previous discussions providing 
+valuable feedbacks.
 
 \section*{Annex 1: Supplementary Resources}
 
 The data, source code and documentation can all be found and
-downloaded from \url{https://github.com/mkao006/sws_imputation}, the
+downloaded from \url{https://github.com/marcogarieri/conSTable/tree/develop}, the
 package can also be installed by following the instruction. 
 
 \FloatBarrier
