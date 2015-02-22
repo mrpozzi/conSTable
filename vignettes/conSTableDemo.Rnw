@@ -97,8 +97,8 @@ install_github("mrpozzi/constable/tree",ref="develop")
 library(conSTable)
 @ 
 
-As discussed in Garieri et al. (2015a), the package requires three
-different files.
+As discussed in Garieri et al. (2015a), the function requires three
+different files (a sample is included with the package).
 <<<files>>=
 file <- system.file("extdata", "Adj.commodityContTab_db.csv",package="conSTable")
 file0 <- system.file("extdata", "Comm.SZ.csv",package="conSTable")
