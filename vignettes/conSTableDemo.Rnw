@@ -97,20 +97,21 @@ install_github("mrpozzi/constable/tree",ref="develop")
 library(conSTable)
 @ 
 
-<<data,echo=FALSE>>=
-commo <- read.csv(system.file("extdata", "Adj.commodityContTab_db.csv",package="conSTable"))
-zeroes <- read.csv(system.file("extdata", "Comm.SZ.csv",package="conSTable"))
-feedf <- read.csv(system.file("extdata", "Adj.feedrange.csv",package="conSTable"))
-
-@ 
-
 As discussed in Garieri et al. (2015a), the package requires three
 different files.
 <<<files>>=
-file <- "Adj.commodityContTab_db.csv"
-file0 <- "Comm.SZ.csv"
-filef <- "Adj.feedrange.csv"
+file <- system.file("extdata", "Adj.commodityContTab_db.csv",package="conSTable")
+file0 <- system.file("extdata", "Comm.SZ.csv",package="conSTable")
+filef <- system.file("extdata", "Adj.feedrange.csv",package="conSTable")
+@
+
+
+<<data,echo=FALSE>>=
+commo <- read.csv(file)
+zeroes <- read.csv(file0)
+feedf <- read.csv(filef)
 @ 
+
 
 The first is a csv file containing prior information (expected value expressed in Kcal/cap/day and variability) given by experts (FAO staff) for the FBSs of the 169 countries belonging to Agricultural Market Information System (AMIS) in 2007-2012.  This is a minimal requirement, which can accommodate the user’s needs.
 
