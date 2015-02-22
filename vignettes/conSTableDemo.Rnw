@@ -297,21 +297,29 @@ output<-balanceOne("Italy",2011,oset=NULL,prop=NULL, nIter = 100,verbose=TRUE,
 @ 
 
 
+In this case we sample 100  balanced tables. Because Italy is
+considered saturated country in term of Dietary Energy Supply
+(i.e. 3539 Kcal/Cap/Day) by experts, the “optimal balance table” is
+the one has the lowest total of the Food column. 
 
 
-
-
-<<amis-plot, fig=TRUE, eps=FALSE,echo=FALSE>>=
-par(mfrow=c(1,2))
-plot(amis,whichOne=1L:2L,n=300)
+We can plot the objective function value for each of the sampled tables
+<<loss-plot, fig=TRUE, eps=FALSE,echo=FALSE>>=
+objfun<-unlist(lapply(1:length(output$tables),function(i)sum(output$tables[[i]][,7]))
+par(cex.axis=1,cex.main=1,cex.lab=1)
+plot(objfun,xlab="Sampled Balanced Tables",ylab="Sum of Column Food",pch=16,lwd=1)
+abline(h=min(objfun),col="red",lty=5,lwd=2)
+segments(which.min(objfun),min(objfun),3,0,col="red",lty=5, lwd=2)
 @
 
+The best table is accessible at \Rcode{output$bestTab} and written to
+the csv \Rcode.{"Italy2011.csv"}
 
 \begin{thebibliography}{30}
 
 
-%\bibitem{amis2009}
-Cornuet, J.M. and Marin, J.M. and Mira, A. and Robert,C. \emph{Adaptive Multiple Importance Sampling}. Scandinavian Journal of Statistics (2012).
+\bibitem{garieri2015}
+Garieri M., Golini, N. and Pozzi L. \emph{Placeholder}. (2015).
 
 
 
