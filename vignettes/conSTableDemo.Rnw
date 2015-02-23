@@ -8,9 +8,12 @@
 %\setcounter{enumi_saved}{\value{enumi}}
 %\setcounter{enumi}{\value{enumi_saved}}
 
-
 \documentclass[letterpaper,pdf,english]{article}
 
+\usepackage[utf8]{inputenc} 
+\usepackage{amsmath}
+
+%\overfullrule=2cm
 
 <<results=hide,echo=FALSE>>=
 options(width = 80)
@@ -58,7 +61,7 @@ set.seed(17)
 %\renewcommand{\footrulewidth}{\headrulewidth}
 
 \title{conSTable Tutorial}
-\author{Marco Garieri, Natalia Golini, Luca Pozzi// Consultants ESS Division, FAO }
+\author{Marco Garieri, Natalia Golini, Luca Pozzi Consultants ESS Division, FAO }
 %\institute{University of Insubria, Varese, Italy}
 %\url{http://www.ceremade.dauphine.fr/~xian}}
 
@@ -67,6 +70,7 @@ set.seed(17)
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \maketitle
 
 
@@ -92,14 +96,15 @@ Future directions of development include the option of using different prior dis
 
 To install the package from github we need to load the package\Rpackage{devtools}
 <<init>>=
-library(devtools)
-install_github("mrpozzi/constable/tree",ref="develop")
-library(conSTable)
+if(!require(conSTable)){
+  library(devtools)
+  install_github("mrpozzi/constable/tree",ref="develop")
+}
 @ 
 
 As discussed in Garieri et al. (2015a), the function requires three
 different files (a sample is included with the package).
-<<<files>>=
+<<files>>=
 file <- system.file("extdata", "Adj.commodityContTab_db.csv",package="conSTable")
 file0 <- system.file("extdata", "Comm.SZ.csv",package="conSTable")
 filef <- system.file("extdata", "Adj.feedrange.csv",package="conSTable")
@@ -110,14 +115,17 @@ filef <- system.file("extdata", "Adj.feedrange.csv",package="conSTable")
 commo <- read.csv(file)
 zeroes <- read.csv(file0)
 feedf <- read.csv(filef)
+country <- "126"
+year <- "2011"
 @ 
 
 
 The first is a csv file containing prior information (expected value expressed in Kcal/cap/day and variability) given by experts (FAO staff) for the FBSs of the 169 countries belonging to Agricultural Market Information System (AMIS) in 2007-2012.  This is a minimal requirement, which can accommodate the user’s needs.
 
+
 The header of the csv file is:
 
-<<<header>>
+<<header,echo=FALSE>>=
    colnames(commo) 
 @ 
 
@@ -142,7 +150,7 @@ of the respective totals, expressed in terms of standard deviation.
 The second file cointains data for the structural zeroes, i.e. values constrained to be zero for specified commodity for some terms of the balance identity \eqref{balance}. These values are not country-variant and year-variant. 
 
 Let's now try the AMIS algorithm on a even stronger shaped Banana target ($b=0.1$, which implies a much harder target)
-<<zeroes>>=
+<<zeroes,echo=FALSE>>=
 head(zeroes)
 @
 
@@ -150,7 +158,7 @@ Structural zeros data are indicated by blank cells.
 
 The third file contains the expected value of the total column of Feed and the respective lower and upper bound, for each country and year. 
 
-<<<feed>>=
+<<feed, echo=FALSE>>=
 head(feedf)
 @ 
 
@@ -160,25 +168,22 @@ These data represent constraint column total of Feed coming from subject matter 
 Now we can read the data, the package has a function for this task and
 for formatting the data properly
 
-<<<read1>>=
+<<read1>>=
 FBS <- readFBS(file,file0,filef)
 @ 
 
 \Robject{FBS} is a nested listindexed by country and year, where:
 \begin{itemize}
-\item \Robject{FBS[[country]][[year]]$data} is a commodities by usage matrix
+\item \Robject{FBS{[[}country{]]}{[[}year{]]}\$data} is a commodities by usage matrix
 with the expected value of the commodity allocated to the specific
 usage (e.g. Food, Feed, etc..). 
-\item \Robject{FBS[[country]][[year]]$feed} is
+\item \Robject{FBS{[[}country{]]}{[[}year{]]}\$feed} is
 a vector with the lower and upper bounds on Feed.
-
-\item \Robject{FBS[[country]][[year]]$sd} is a matrix with the
-  variabilities for each value of \Robject{FBS[[country]][[year]]$data}
-  
-\item \Robject{FBS[[country]][[year]]$row_Tot} is a vector with the
+\item \Robject{FBS{[[}country{]]}{[[}year{]]}\$sd} is a matrix with the
+  variabilities for each value of \Robject{FBS{[[}country{]]}{[[}year{]]}\$data}
+\item \Robject{FBS{[[}country{]]}{[[}year{]]}\$row\_Tot} is a vector with the
   Production of each commodity. This represents a constraint on the
   total of the row (commodity).
-
 \end{itemize}
 
 
@@ -195,18 +200,18 @@ The package include functions to balance:
   \subsection{Balancing a Country for a given Year}
   
   
-  The function for balancing a single combination Country/Year exploits the principle of function closure to create a function which encapsulates the data and can then be re-used multiple times with different options
-  <<balanceOne>>=
-  balanceOne<-balanceFBS(FBS,sanityCheck=T)
-oneTab <- balanceOne(country,year,oset=NULL,prop=NULL, nIter = 100,verbose=FALSE,
-               writeTab=FALSE, checks="none")
-  @
+  The function for balancing a single combination Country/Year exploits the principle of function closure to create a function which encapsulates the data and can then be re-used multiple times with different options:
   
+  <<balanceOne>>=
+balanceOne<-balanceFBS(FBS)
+oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000),prop=NULL, nIter = 100,verbose=FALSE,checks="none",feedShift=30)
+@
+
   
   Where the input is:
   
   \begin{itemize}
-\item \Robject{sanityCheck: if \Rcode{TRUE} the algorithm checks, in the input stage, if the total of Feed in the table FBS[[country]][[year]]$data falls in the boundaries given by \Robject{FBS[[country]][[year]]$feed}. 
+\item \Robject{sanityCheck}: if \Rcode{TRUE} the algorithm checks, in the input stage, if the total of Feed in the table \Robject{FBS{[[}country{]]}{[[}year{]]}\$data} falls in the boundaries given by \Robject{FBS{[[}country{]]}{[[}year{]]}\$feed}. 
 \item \Robject{country}: the country of interest.
 \item \Robject{year}: the year of interest.
 \item \Robject{oset}: a vector of the same length of the number of columns. It defines the variability for each column in absolute terms of the expected values for each column.  If \Rcode{oset=NULL} then the variability of each commodity in each column will be assumed to be $20\%$ of the total of the respective column. See formula (4) in Section 3 in Garieri at al. (2015) for more details. 
@@ -229,9 +234,9 @@ If \Rcode{"none"} the above checks will not stop the algorithm but will throw wa
 At the time, the algorithm does not stop if the previous conditions are not respected but returns warnings.
 The algorithm stops if:
   \begin{enumerate}
-\item Production has negative values in \Rcode{FBS[[country]][[year]]$row_Tot}
-\item Imports  has positive values in \Rcode{FBS[[country]][[year]]$data}, because it can only take negative values in the balance identity (1);
-\item Exports has negative values in \Rcode{FBS[[country]][[year]]$data}, because it can only take positive values in the balance identity (1);
+\item Production has negative values in \Rcode{FBS{[[}country{]]}{[[}year{]]}\$row\_Tot}
+\item Imports  has positive values in \Rcode{FBS{[[}country{]]}{[[}year{]]}\$data}, because it can only take negative values in the balance identity (1);
+\item Exports has negative values in \Rcode{FBS{[[}country{]]}{[[}year{]]}\$data}, because it can only take positive values in the balance identity (1);
 \item null rows have not null row sums. 
   \end{enumerate}
 The function \Rfunction{balanceOne} returns an object with the
@@ -249,7 +254,7 @@ following fields:
   
   To balance a country for all the years available, type the following:
   <<balanceCountry>>=
- countryTab <- balanceCountry(FBS,country,oset=NULL,prop=NULL, nIter = 100, verbose=FALSE,writeTab=FALSE,sanityCheck = FALSE,checks="none")
+ countryTab <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=FALSE,feedShift=20)
   @
     This function has the same inputs as \Rfunction{balanceFBS}  and
     provides a list in output with one of the objects described above
@@ -267,33 +272,33 @@ following fields:
       
   \subsection{Balancing every Country for every Year}
 To balance all the years and countries in the data we use a command like
-<<<balanceAll>>=
-allTab <- balanceAll(FBS,oset=NULL,prop=NULL, nIter = 100,verbose=FALSE, writeTab=FALSE, sanityCheck = FALSE, checks="none")
+<<balanceAll, eval=FALSE, echo=TRUE>>=
+allTab <- balanceAll(FBS,oset=c(30,30,40,50,50,10000),feedShift=20,verbose=FALSE)
 @ 
 
 \section{An Example: Italy in 2011}
 
 Let's now look at the data for Italy for year 2011. Note how the user
 can see the list o available countries
-<<<countries>>=
-attr(FBS,"countryMap")
+<<countries>>=
+head(attr(FBS,"countryMap"))
 @ 
 
 and the list of years for that country as
-<<<year>>=
-names(FBS[[attr(FBS,"countryMap")[["Italy"]]]])
+<<year>>=
+head(names(FBS[[attr(FBS,"countryMap")[["Italy"]]]]))
 @ 
 
-<<<setupItaly,echo=FALSE>>=
+<<setupItaly,echo=FALSE>>=
 country<-"106"
 year<-"2011"
 @ 
 Let's run the algorithm for that combination
-<<<balanceItaly>>=
-balanceOne<-balanceFBS(FBS,sanityCheck=T)
+<<balanceItaly>>=
+balanceOne<-balanceFBS(FBS)
 set.seed(181282)
-output<-balanceOne("Italy",2011,oset=NULL,prop=NULL, nIter = 100,verbose=TRUE,
-               writeTab=T, checks="none")
+output<-balanceOne("Italy",2011,oset=c(30,30,40,50,50,10000),nIter = 100,verbose=FALSE,
+               writeTab=FALSE, checks="none",sanityCheck=TRUE)
 
 @ 
 
@@ -305,16 +310,18 @@ the one has the lowest total of the Food column.
 
 
 We can plot the objective function value for each of the sampled tables
+\begin{figure}
+\centering
 <<loss-plot, fig=TRUE, eps=FALSE,echo=FALSE>>=
-objfun<-unlist(lapply(1:length(output$tables),function(i)sum(output$tables[[i]][,7]))
+objfun<-unlist(lapply(1:length(output$tables),function(i)sum(output$tables[[i]][,7])))
 par(cex.axis=1,cex.main=1,cex.lab=1)
 plot(objfun,xlab="Sampled Balanced Tables",ylab="Sum of Column Food",pch=16,lwd=1)
 abline(h=min(objfun),col="red",lty=5,lwd=2)
 segments(which.min(objfun),min(objfun),3,0,col="red",lty=5, lwd=2)
 @
-
-The best table is accessible at \Rcode{output$bestTab} and written to
-the csv \Rcode.{"Italy2011.csv"}
+\end{figure}
+The best table is accessible at \Rcode{output\$bestTab} and written to
+the csv \Rcode{"Italy2011.csv"} if you run the algorithm with option \Rcode{writeTab=TRUE}
 
 \begin{thebibliography}{30}
 
