@@ -12,11 +12,11 @@
 
 \usepackage[utf8]{inputenc} 
 \usepackage{amsmath}
+\usepackage[affil-it]{authblk}
 
-%\overfullrule=2cm
 
 <<results=hide,echo=FALSE>>=
-options(width = 80)
+options(width = 90)
 set.seed(17)
 @ 
 
@@ -61,8 +61,8 @@ set.seed(17)
 %\renewcommand{\footrulewidth}{\headrulewidth}
 
 \title{conSTable Tutorial}
-\author{Marco Garieri, Natalia Golini, Luca Pozzi Consultants ESS Division, FAO }
-%\institute{University of Insubria, Varese, Italy}
+\author{Marco Garieri, Natalia Golini, Luca Pozzi}
+\affil{Consultants ESS Division, FAO}
 %\url{http://www.ceremade.dauphine.fr/~xian}}
 
 
@@ -76,7 +76,7 @@ set.seed(17)
 
 \begin{abstract}
 
-conSTable is an R package designed to address the reconstruction of unreliable or missing values in partially observed tables using a sampling strategy. The package has been developed within the Statistical Division (ESS) at the Food and Agricultural Organization (FAO) of the United Nations to solve the problem of balancing the Food Balance Sheets (FBSs). FBS are real valued matrices with structural zeros, i.e. entries constrained to be zeroes, whose rows and columns have to satisfy a series of equality constraints. The cell values are only partially reliable due to measurement and reporting error. We will go through a real worls example to illustrate the functionalities of the package
+conSTable is an R package designed to address the reconstruction of unreliable or missing values in partially observed tables using a sampling strategy. The package has been developed within the Statistical Division (ESS) at the Food and Agricultural Organization (FAO) of the United Nations to solve the problem of balancing the Food Balance Sheets (FBSs). FBS are real valued matrices with structural zeros, i.e. entries constrained to be zeroes, whose rows and columns have to satisfy a series of equality constraints. The cell values are only partially reliable due to measurement and reporting error. We will go through a real world example to illustrate the functionalities of the package
 
 \end{abstract}
 
@@ -84,11 +84,11 @@ conSTable is an R package designed to address the reconstruction of unreliable o
 \section{Introduction}
 
 A few initial remarks are important before getting started with the tutorial. This document is written for first-time users of the conSTable package. It is not a reference manual, nor does it contain the technical details. A reference manual is available in Garieri et al. (2015c), while in Garieri et al. (2015a) the sampling strategy for generating plausible (FBSs) is shown.  Using of conSTable doesn’t require  proficiency in R. Nonetheless, some degree of familiarity with R will help with more complex modeling tasks.
-As pointed out in Garieri et al. (2015a), the algorithm implemented in this package is developed for sampling plausible tables with limited information. This methodology can beapplied to any balancing problem, e.g. balancing of Input Output tables, Social Accounting Matrix, etc.
+As pointed out in Garieri et al. (2015a), the algorithm implemented in this package is developed for sampling plausible tables with limited information. This methodology can be applied to any balancing problem, e.g. balancing of Input Output tables, Social Accounting Matrix, etc.
 The functionalities of conSTable are shown in the contest of two-way tables. The real world example are the FBSs of the 169 countries belonging to Agricultural Market Information System (AMIS) for years 2007-2012 and following the sampling strategy proposed in  Garieri et al. (2015a). A careful reading of the cited paper is strongly recommended. 
 
-The package is currently available at https://github.com/mrpozzi/conSTable/tree/develop and, it has been integrated into Statistical Working System (SWS) of FAO and is directly executable by FAO staff.
-conSTable requires R, version 3.1.2 or higher. R is an open source statistical software which can be downloaded at http://cran.r-project.org/. Another requirement is package msm.
+The package is currently available at \url{https://github.com/mrpozzi/conSTable/tree/develop} and, it has been integrated into Statistical Working System (SWS) of FAO and is directly executable by FAO staff.
+conSTable requires R, version 3.1.2 or higher. R is an open source statistical software which can be downloaded at \url{http://cran.r-project.org/}. Another requirement is package \Rcode{msm}.
 Future directions of development include the option of using different prior distribution (i.e., normal skewness), additional constraints on the columns and many others.
 
 
@@ -149,7 +149,6 @@ of the respective totals, expressed in terms of standard deviation.
 
 The second file cointains data for the structural zeroes, i.e. values constrained to be zero for specified commodity for some terms of the balance identity \eqref{balance}. These values are not country-variant and year-variant. 
 
-Let's now try the AMIS algorithm on a even stronger shaped Banana target ($b=0.1$, which implies a much harder target)
 <<zeroes,echo=FALSE>>=
 head(zeroes)
 @
@@ -172,7 +171,7 @@ for formatting the data properly
 FBS <- readFBS(file,file0,filef)
 @ 
 
-\Robject{FBS} is a nested listindexed by country and year, where:
+\Robject{FBS} is a nested list indexed by country and year, where:
 \begin{itemize}
 \item \Robject{FBS{[[}country{]]}{[[}year{]]}\$data} is a commodities by usage matrix
 with the expected value of the commodity allocated to the specific
@@ -200,11 +199,11 @@ The package include functions to balance:
   \subsection{Balancing a Country for a given Year}
   
   
-  The function for balancing a single combination Country/Year exploits the principle of function closure to create a function which encapsulates the data and can then be re-used multiple times with different options:
+  The function for balancing a single combination Country\/Year exploits the principle of function closure to create a function which encapsulates the data and can then be re-used multiple times with different options:
   
   <<balanceOne>>=
 balanceOne<-balanceFBS(FBS)
-oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000),prop=NULL, nIter = 100,verbose=FALSE,checks="none",feedShift=30)
+oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000), nIter = 100,verbose=FALSE,checks="none",feedShift=30)
 @
 
   
@@ -215,10 +214,10 @@ oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000),prop=NULL, nIter = 10
 \item \Robject{country}: the country of interest.
 \item \Robject{year}: the year of interest.
 \item \Robject{oset}: a vector of the same length of the number of columns. It defines the variability for each column in absolute terms of the expected values for each column.  If \Rcode{oset=NULL} then the variability of each commodity in each column will be assumed to be $20\%$ of the total of the respective column. See formula (4) in Section 3 in Garieri at al. (2015) for more details. 
-\item \Robject{prop}: must be a number between 0 and 1 or a vector of length 6 with values in the same range. It expresses the variability on a cell value in terms of a percentage of such value. To be used in an analogous way as \Robject{oset}.
+\item \Robject{prop}: must be a number between 0 and 1 or a vector of length 6 with values in the same range. It expresses the variability on a cell value in terms of a percentage of such value. To be used in an analogous way as \Robject{oset}. Either \Robject{prop} or \Robject{oset} have to be defined.
 \item \Robject{n.iter} is the number of iterations of the
   sampler. The function will generate a single FBS per iteration and
-  the best will be chosen using the loss function and othe constraints.
+  the best will be chosen using the objective function and the constraints.
  \item \Robject{verbose}: if \Rcode{TRUE} progess messages are printed
   to screen.
   \item \Robject{writeTab}: if \Rcode{TRUE} the optimal balanced FBS is written in a csv file in the working directory.
@@ -250,13 +249,16 @@ following fields:
 \end{itemize}
 
 
-  \subsection{Balancing a Country for every Year}
-  
-  To balance a country for all the years available, type the following:
-  <<balanceCountry>>=
- countryTab <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,10000),prop=NULL, nIter = 10,verbose=FALSE,feedShift=20)
+\subsection{Balancing a Country for every Year}
+
+To balance a country for all the years available, type the following:
+
+<<balanceCountry, eval=FALSE, echo=TRUE>>=
+ countryTab <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,1e4), nIter = 10,verbose=FALSE)
   @
-    This function has the same inputs as \Rfunction{balanceFBS}  and
+
+
+This function has the same inputs as \Rfunction{balanceFBS}  and
     provides a list in output with one of the objects described above
     for every year.
     
@@ -305,7 +307,7 @@ output<-balanceOne("Italy",2011,oset=c(30,30,40,50,50,10000),nIter = 100,verbose
 
 In this case we sample 100  balanced tables. Because Italy is
 considered saturated country in term of Dietary Energy Supply
-(i.e. 3539 Kcal/Cap/Day) by experts, the “optimal balance table” is
+(i.e. 3539 Kcal/Cap/Day) by experts, the "optimal balance table" is
 the one has the lowest total of the Food column. 
 
 

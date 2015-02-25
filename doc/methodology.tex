@@ -94,9 +94,9 @@
 In this paper we describe a sampling strategy to generate balanced FBSs. 
  A FBS is a collection of information from different sources (official and unofficial) 
  prone to measures errors and uncertainties. Our method tries to solve the 
- problem of the balancing of the FBSs in a flexible way, trusting reliable information 
- and re-allocating the uncertainty  over the non-reliable information. Considering 
- agro-economical information in the form of constrains and  objective functions, 
+ problem of  balancing the FBSs in a flexible way, trusting reliable information 
+ and re-allocating the uncertainty over the non-reliable information. Considering 
+ agro-economical information in the form of minimal constrains and objective functions, 
  we are able to produce a unique solution (balanced FBS).
 }
 
@@ -117,7 +117,7 @@ In this paper we describe a sampling strategy to generate balanced FBSs.
 \begin{document}
 
 \section*{Disclaimer}
-This Working Paper should not be reported as representing the views of
+This Working Paper should not be reported as representing the official view of
 the FAO. The views expressed in this Working Paper are those of the
 author and do not necessarily represent those of the FAO or FAO
 policy. Working Papers describe research in progress by the authors and
@@ -146,12 +146,12 @@ country of the reference period the Total Supply (TS) is not equal to the Total
 Utilization (TU). Then, the balancing of FBSs is a primary problem within FAO.\\
 
 In this paper we introduce a very flexible algorithm to solve the problem of 
-balancing FBSs through sampling steps.  The method proposed respect the 
-balance equation for each rows (as explain in Section 2) and take in 
+balancing FBSs through sampling steps.  The method proposed respects the 
+balance equation for each rows (as explain in Section 2) and takes in 
 consideration of possible constrains, meaningful from a agro-economical 
-point of view, and generate a unique solution on the basis of objective functions. 
+point of view, and choose a unique solution that optimizes an appropriate objective function. 
 The approach considers all prior information on measurement or estimate 
-uncertainties available, in the form of mean and range around the mean 
+uncertainties available, in the form of mean and variability around the mean 
 ($\pm$ sd) per cell or columns, in case only little information is available.\\
  
 The paper is structured as follows. Section 2 gives an overview of existing methods,
@@ -163,11 +163,11 @@ section 3  describes the FBSs and the
 \FloatBarrier
 \section{Background and Review of Literature}
 
-The balancing problem is well-known studied in economics literature. Often 
+The balancing problem is well-known in economics literature. Often 
 census-based Input-Output (IO) tables or social-accounting matrixes (SAM) are 
-cases of not balanced tables, i.e., row sums different from and column sums. 
+cases of not balanced tables. 
 Some of the most used approach are the Generalized Maximum Entropy (GME) 
- andthe  Generalized Cross Entropy (GCE) techniques \cite{Robinson2000}, \cite{Britz2002},
+ and the  Generalized Cross Entropy (GCE) techniques \cite{Robinson2000}, \cite{Britz2002},
  \cite{Robilliard2003}. In \cite{Robinson2000}, the 
  authors present a flexible "cross entropy" approach to estimate consistent SAMs 
  starting from data estimated with errors. In this approach the error is a weighed average
@@ -177,7 +177,8 @@ Some of the most used approach are the Generalized Maximum Entropy (GME)
  proposed to overcome to this problem. In a Bayesian framework the prior information 
  held by the researcher has a direct and interpretable formulation \cite{Heckelei2008}, 
  \cite{Rodrigues2014}. However, in this case, a considerable amount of prior 
- information, not available to us, is necessary   in order to have a unique solution.\\
+ information, not available to us, is necessary in order to have a unique solution.
+
 
 The balancing problem has been associated with the solution of the contingency 
 tables  problem with fixed margins, trying to input individual cell entries and inferring 
@@ -186,10 +187,10 @@ the model's parameters underlying the table (see \cite{Dinwoodie2011}, \cite{Che
 authors propose a combination of a sequential importance sampling (SIS) with a 
 sequentially updated normal  proposal distribution. And thus, the maximum entropy 
 distribution is sequentially approximated. The algorithm, has to sample all the 
-cell conditionally to the constrains,  and for this reason is high memory demanding 
-and the speed depend on the table  dimension. For these reason, and for the 
+cell conditionally to the constrains,  for this reason is very memory demanding 
+and the speed depends on the table dimension. For these reason, and for the 
 assumption of non-negative cell value, the method is not suitable for our problem 
-of balancing FBSs.\\
+of balancing FBSs.
 
 
 
@@ -231,8 +232,8 @@ In Figure \ref{tab:fbs_italy_2011}, the first lines of the FBS for Italy in 2011
 
 \subsection{Balancing equation}
 The term "balancing table" refers to the attempt to balance accounts 
-in each country for each commodity between its supply (Production, 
-Imports, Stock Changes and Exports) and its uses (Food, Food Manufacturing, 
+in each country for each commodity. This is done by matching supply (Production, 
+Imports, Stock Changes and Exports) and uses (Food, Food Manufacturing, 
 Feed, Seed, Waste,  and Other Uses).\\
 For each commodity $i$ in a given country $c$ at time $t$ the Total Supply 
 (TU) and the Total Domestic Utilization (TU) are described as following: 
@@ -254,7 +255,7 @@ or "closed" FBS the following balance identity needs to hold:
 \end{equation}
 
 The identity \ref{eq} is often not respected, due to the uncertainty of data, 
-as explained in the previous section. Mahjoubi and Prakash (2012) and 
+as explained in the previous section, Mahjoubi and Prakash (2012) and 
 FAO (2014)
 
 \subsection{Methods for  estimate TS and TU}
@@ -264,7 +265,7 @@ and official data are available only for very few developed countries
 \cite{Mahjoubi2012}, \cite{fao2014}.
 
 \subsubsection{Production and trade}
-Due to these elements' reliability, these elements drive the FBS production system. 
+Due to these elements' reliability they drive the FBS production system. 
 Consequently, data collection efforts, especially in the Production domain, that 
 rely on questionnaire response, remain key. The information that FBS supplies 
 ultimately can only be as good as the core underlying data, and concerted action 
@@ -296,7 +297,7 @@ and maintains the links in the various levels of the balance sheets.
 \subsubsection{Feed}
 This term represents the quantity of the commodity available for feeding to 
 livestock and poultry during the year. Less than 15\% of the countries respond 
-to FAO’s feed questionnaire and most of them are developed countries. For the 
+to FAO's feed questionnaire and most of them are developed countries. For the 
 rest of the world, a new method was developed. It is divided in two steps: 
 \begin{itemize}
 \item[i] determine feed requirements for metabolizable energy and protein 
@@ -519,7 +520,7 @@ feedstocks for the production of liquid fuels, chemicals and advanced materials,
 as composites for industry, while the emergence of green industries expands opportunities 
 for the rural sector. A generalized model provides reliable estimates of industrial usage. 
 Important drivers of industrial usage likely include income, the level of industrialization, 
-policy mandates, and a country’s comparative advantage in cultivating and processing 
+policy mandates, and a country's comparative advantage in cultivating and processing 
 the crop. A data collection strategies that inform other important industrial activities 
 involving food crops, such as the Aglink-Cosimo framework of the OECD/FAO, is used t
 o test and refine the model.
@@ -528,11 +529,11 @@ o test and refine the model.
 In the accounts of FBS, food losses are considered to be the amount of lost commodities, 
 starting from the moment when production is recorded until it reaches the consumer. 
 Food wasted at the household level is not considered as a loss in the FBS, but rather 
-as “waste”. The FBS reports food losses for each relevant type of food, each country 
-and for each year. However, the amount of food loss is not asked in the country’s production 
-questionnaire and empirical data on food losses are rare. Using ‘measured’ FBS data, 
+as "waste". The FBS reports food losses for each relevant type of food, each country 
+and for each year. However, the amount of food loss is not asked in the country's production 
+questionnaire and empirical data on food losses are rare. Using "measured" FBS data, 
 together with data from additional surveys, loss ratios is imputed for cases in which no 
-measured data are available (see \cite{Klaus2014} for more details).\\\\
+measured data are available (see \cite{Klaus2014} for more details).\\
 
 In the next table the FBS for Italy 2011 is presented partially. The value are expressed in 
  kilocalories per capita per day (kcal/cap/day), and the structural zeros are presented as 0*.
@@ -677,7 +678,7 @@ In the next table the optimal table, for Italy 2011, is presented
 
 Figure \ref{fig:res} shows the variability of the point estimates of Feed in the sampled 
 balanced tables. The red dashed lines are the upper and lower bounds reported in Table \ref{tab:fbs_italy_feed}. The blue dashed line is the point estimate of the Feed total given 
-by experts, while the red one is the point estimate reported in the “optimal balanced table”.
+by experts, while the red one is the point estimate reported in the "optimal balanced table".
 
 \begin{knitrout}
 %\definecolor{shadecolor}{rgb}{0, 0, 0}\color{fgcolor}
@@ -709,14 +710,16 @@ the development of the methodology. The author would also like to thank
 the team members which participated in the previous discussions providing 
 valuable feedbacks.
 
-\section*{Annex 1: Supplementary Resources}
+\appendix
+
+\section{Supplementary Resources}
 
 The data, source code and documentation can all be found and
 downloaded from \url{https://github.com/mrpozzi/conSTable/tree/develop}, the
 package can also be installed by following the instruction. 
 
 \FloatBarrier
-\section*{Annex 2: Pseudo Codes}
+\section{Pseudo Code}
      
 
 \begin{algorithm}[H]
@@ -836,7 +839,7 @@ package can also be installed by following the instruction.
   
 \bibitem{Mahjoubi2012}
   Mahjoubi R. and Prakash A. ,
-  \emph{New framework to compile FAO’s Food Balance Sheets.},
+  \emph{New framework to compile FAO"s Food Balance Sheets.},
   Twenty-fourth Session of the Asia and Pacific Commission on Agricultural Statistics. Da Lat, Viet Nam,
   2012.
  
