@@ -559,11 +559,16 @@ already balanced, even if the estimates have uncertainty.
          \hline
          73. Veg & 37.12 & 83.24 & 0 & 0* & 2.16 & 0* & 97.44 & 73.82 & 71.90\\
         \hline\hline
-        Tot Cols & 4344.11 & 1766.80 & 2824.55 & 86.37 & 162.77 & 272.77 & 4203.27 & -160.93 & 5132.59\\
+        Tot Cols & 4351.34 & 1768.73 & 2520.21 & 86.57 & 167.93 & 722.42 & 4317.65 & -152.47 & 5387.90\\
       \hline
     \end{tabular}
   \end{center}  
 \end{table}
+
+   Imports    Exports       Feed       Seed     Losses Industrial       Food      Stock 
+-4351.3407  1768.7348         NA         NA   167.9346         NA  4317.6476  -152.4760
+
+
 
 While in the next table we have the standard deviation for the trade columns (Imports
 and Exports). This is another input given by the user in the algorithm.
@@ -631,8 +636,7 @@ As previously mention, other objective function can be applied, and this is just
 
 \subsection{Test}
 We decide to sample 100 plausible (balanced) tables starting from the FBS for Italy 2011. 
-As present in the Figure \ref{fig:plot}, from all the possible solution, the table which maximize 
-Food is the third one, with a Food total of 4406.70. Note that the solution is always unique and
+Because Italy is considered saturated country in term of Dietary Energy Supply (i.e. 3539 Kcal/Cap/Day) by experts, the "optimal balance table" is the one has the lowest total of the Food column. Note that the solution is always unique and
 the results are reproducible, if the seed is fixed.
 
 
@@ -670,13 +674,13 @@ In the next table the optimal table, for Italy 2011, is presented
          \hline
          73. Veg & 37.14 & 83.35 & 1.15 & 0* & 1.97 & 0* & 93.21 & 70.64 & 71.90\\
         \hline\hline
-        Tot Cols & 4344.18 & 1767.14 & 2881.20 & 126.63 & 379.25 & 342.00 & 4406.70 & 426.15 & 5132.59\\
+        Tot Cols & 4353.29 & 1767.60 & 2614.80 & 130.46 & 368.21 & 755.54 & 4490.04 & -385.46 & 5387.90\\
       \hline
     \end{tabular}
   \end{center}  
 \end{table}
 
-Figure \ref{fig:res} shows the variability of the point estimates of Feed in the sampled 
+Figure \ref{fig:plot} shows the variability of the point estimates of Feed in the sampled 
 balanced tables. The red dashed lines are the upper and lower bounds reported in Table \ref{tab:fbs_italy_feed}. The blue dashed line is the point estimate of the Feed total given 
 by experts, while the red one is the point estimate reported in the "optimal balanced table".
 
@@ -700,7 +704,7 @@ a solution even in the case of incomplete and unreliable information and allowin
 user to set several meaningful constrains.
 The algorithm is written in the statistical programming language R \cite{rCore} in the 
 {\tt constable} package.
-For a user friendly tutorial  on conSTable package in Garieri et al., 2015.
+For a user friendly tutorial  on conSTable package in \cite{Garieri2015}.
 
 \newpage
 \section*{Acknowledgement}
@@ -818,6 +822,12 @@ package can also be installed by following the instruction.
   \emph{A new approach to food balance sheet methods and design.},
   Twenty-fifth Session of the Asia and Pacific Commission on Agricultural Statistics. Ventiane, Lao PDR, February 2014,
   2014.
+  
+\bibitem{Garieri2015}
+  Garieri M., Golini N., Pozzi L, FAO, Statistics Division (ES)
+  \emph{conSTable Tutorial.},
+ 2015.
+    
   
 \bibitem{Klaus2014}
   Grunberger K., Statistic Division (ES) FAO
