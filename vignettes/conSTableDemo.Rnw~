@@ -83,7 +83,7 @@ conSTable is an R package designed to address the reconstruction of unreliable o
 
 \section{Introduction}
 
-A few initial remarks are important before getting started with the tutorial. This document is written for first-time users of the conSTable package. It is not a reference manual, nor does it contain the technical details. In \cite{garieri2015} the sampling strategy for generating plausible (FBSs) is shown.  Using of conSTable doesn’t require  proficiency in R. Nonetheless, some degree of familiarity with R will help with more complex modeling tasks.
+A few initial remarks are important before getting started with the tutorial. This document is written for first-time users of the conSTable package. It is not a reference manual, nor does it contain the technical details. A reference manual is available in Garieri et al. (2015c), while in Garieri et al. (2015a) the sampling strategy for generating plausible (FBSs) is shown.  Using of conSTable doesn’t require  proficiency in R. Nonetheless, some degree of familiarity with R will help with more complex modeling tasks.
 As pointed out in Garieri et al. (2015a), the algorithm implemented in this package is developed for sampling plausible tables with limited information. This methodology can be applied to any balancing problem, e.g. balancing of Input Output tables, Social Accounting Matrix, etc.
 The functionalities of conSTable are shown in the contest of two-way tables. The real world example are the FBSs of the 169 countries belonging to Agricultural Market Information System (AMIS) for years 2007-2012 and following the sampling strategy proposed in  Garieri et al. (2015a). A careful reading of the cited paper is strongly recommended. 
 
@@ -130,12 +130,12 @@ The header of the csv file is:
 @ 
 
 For these FBSs, the experts (FAO staff) have assumed that the only reliable information (consolidated term) comes from “Production” and that the balance identity to be respected is the following:
-\begin{eqnarray*}\label{balance}
+\begin{eqnarray}\label{balance}
 \textrm{Production}_{i,c,t} = -\textrm{Total Imports}_{i,c,t} +
 \textrm{Total Exports}_{i,c,t} + \textrm{Feed} \\
 \textrm{Seed}_{i,c,t} + \textrm{Losses}_{i,c,t} +
   \textrm{Industrial}_{i,c,t} - \textrm{Stock}_{i,c,t}
-\end{eqnarray*}
+\end{eqnarray}
 
 for each commodity $i$ in a given country $c$ during the period $t$.
 
@@ -214,7 +214,7 @@ oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000),
 \item \Robject{sanityCheck}: if \Rcode{TRUE} the algorithm checks, in the input stage, if the total of Feed in the table \Robject{FBS{[[}country{]]}{[[}year{]]}\$data} falls in the boundaries given by \Robject{FBS{[[}country{]]}{[[}year{]]}\$feed}. 
 \item \Robject{country}: the country of interest.
 \item \Robject{year}: the year of interest.
-\item \Robject{oset}: a vector of the same length of the number of columns. It defines the variability for each column in absolute terms of the expected values for each column.  If \Rcode{oset=NULL} then the variability of each commodity in each column will be assumed to be $20\%$ of the total of the respective column. See formula (5) in Section 4 in \cite{garieri2015} for more details. At the moment, StockVar variability is not relevant, since StockVar is calculated, for each commodity, as residual.
+\item \Robject{oset}: a vector of the same length of the number of columns. It defines the variability for each column in absolute terms of the expected values for each column.  If \Rcode{oset=NULL} then the variability of each commodity in each column will be assumed to be $20\%$ of the total of the respective column. See formula (4) in Section 3 in Garieri at al. (2015) for more details. 
 \item \Robject{prop}: must be a number between 0 and 1 or a vector of length 6 with values in the same range. It expresses the variability on a cell value in terms of a percentage of such value. To be used in an analogous way as \Robject{oset}. Either \Robject{prop} or \Robject{oset} have to be defined.
 \item \Robject{n.iter} is the number of iterations of the
   sampler. The function will generate a single FBS per iteration and
@@ -249,8 +249,6 @@ following fields:
 \item \Rcode{objective}: value of the objective function for the best table.
 \end{itemize}
 
-We recall that, at the moment, the algorithm requires the input table to be balanced in input. The reason is that, with  rows difficult to be sampled, after several attempts it gives the input rows in output.\\
-If the optimal table, after applying the objective function, does not respect the feed ranges given by expert, the algorithm will start again, chaning the oset parameter for the feed column, taking half of the previous attempt. This process will be recursive until the optimal table respect the feed constrains.
 
 \subsection{Balancing a Country for every Year}
 
@@ -325,7 +323,6 @@ segments(which.min(objfun),min(objfun),3,0,col="red",lty=5, lwd=2)
 The best table is accessible at \Rcode{output\$bestTab} and written to
 the csv \Rcode{"Italy2011.csv"} if you run the algorithm with option \Rcode{writeTab=TRUE}
 
-\newpage
 \begin{thebibliography}{30}
 
 
