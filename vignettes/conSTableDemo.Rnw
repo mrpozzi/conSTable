@@ -201,9 +201,10 @@ The package include functions to balance:
   
   The function for balancing a single combination Country\/Year exploits the principle of function closure to create a function which encapsulates the data and can then be re-used multiple times with different options:
   
-  <<balanceOne>>=
-balanceOne<-balanceFBS(FBS)
-oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000), nIter = 100,verbose=FALSE,checks="none",feedShift=30)
+<<balanceOne>>=
+balanceOne <- balanceFBS(FBS)
+oneTab <- balanceOne("9",2012,oset=c(30,30,30,30,30,10000),
+                     nIter=100,verbose=FALSE,checks="none",feedShift=30)
 @
 
   
@@ -251,11 +252,10 @@ following fields:
 
 \subsection{Balancing a Country for every Year}
 
-To balance a country for all the years available, type the following:
-
-<<balanceCountry, eval=FALSE, echo=TRUE>>=
- countryTab <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,1e4), nIter = 10,verbose=FALSE)
-  @
+To balance a country for all the years available, type the following\\
+<<balanceCountry,echo=TRUE,eval=FALSE>>=
+countryTab <- balanceCountry(FBS,"Congo",oset=c(30,30,40,50,50,1e4), nIter=10,verbose=FALSE)
+@
 
 
 This function has the same inputs as \Rfunction{balanceFBS}  and
@@ -299,9 +299,7 @@ Let's run the algorithm for that combination
 <<balanceItaly>>=
 balanceOne<-balanceFBS(FBS)
 set.seed(181282)
-output<-balanceOne("Italy",2011,oset=c(30,30,40,50,50,10000),nIter = 100,verbose=FALSE,
-               writeTab=FALSE, checks="none",sanityCheck=TRUE)
-
+output<-balanceOne("Italy",2011,oset=c(30,30,40,50,50,10000),nIter = 100,verbose=FALSE,writeTab=FALSE, checks="none",sanityCheck=TRUE)
 @ 
 
 
