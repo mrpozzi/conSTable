@@ -60,7 +60,7 @@ set.seed(17)
 %\rhead{}
 %\renewcommand{\footrulewidth}{\headrulewidth}
 
-\title{conSTable Tutorial}
+\title{\Rcode{conSTable} Tutorial}
 \author{Marco Garieri, Natalia Golini, Luca Pozzi}
 \affil{Consultants ESS Division, FAO}
 %\url{http://www.ceremade.dauphine.fr/~xian}}
@@ -76,19 +76,19 @@ set.seed(17)
 
 \begin{abstract}
 
-conSTable is an R package designed to address the reconstruction of unreliable or missing values in partially observed tables using a sampling strategy. The package has been developed within the Statistical Division (ESS) at the Food and Agricultural Organization (FAO) of the United Nations to solve the problem of balancing the Food Balance Sheets (FBSs). FBS are real valued matrices with structural zeros, i.e. entries constrained to be zeroes, whose rows and columns have to satisfy a series of equality constraints. The cell values are only partially reliable due to measurement and reporting error. We will go through a real world example to illustrate the functionalities of the package
+\Rcode{conSTable} is an R package designed to address the reconstruction of unreliable or missing values in partially observed tables using a sampling strategy. The package has been developed within the Statistical Division (ESS) at the Food and Agricultural Organization (FAO) of the United Nations to solve the problem of balancing the Food Balance Sheets (FBSs). FBS are real valued matrices with structural zeros, i.e. entries constrained to be zeroes, whose rows and columns have to satisfy a series of equality constraints. The cell values are only partially reliable due to measurement and reporting error. We will go through a real world example to illustrate the functionalities of the package
 
 \end{abstract}
 
 
 \section{Introduction}
 
-A few initial remarks are important before getting started with the tutorial. This document is written for first-time users of the conSTable package. It is not a reference manual, nor does it contain the technical details. In \cite{garieri2015} the sampling strategy for generating plausible (FBSs) is shown.  Using of conSTable doesn’t require  proficiency in R. Nonetheless, some degree of familiarity with R will help with more complex modeling tasks.
-As pointed out in Garieri et al. (2015a), the algorithm implemented in this package is developed for sampling plausible tables with limited information. This methodology can be applied to any balancing problem, e.g. balancing of Input Output tables, Social Accounting Matrix, etc.
-The functionalities of conSTable are shown in the contest of two-way tables. The real world example are the FBSs of the 169 countries belonging to Agricultural Market Information System (AMIS) for years 2007-2012 and following the sampling strategy proposed in  Garieri et al. (2015a). A careful reading of the cited paper is strongly recommended. 
+A few initial remarks are important before getting started with the tutorial. This document is written for first-time users of the \Rcode{conSTable} package. It is not a reference manual, nor does it contain the technical details. In \cite{garieri2015} the sampling strategy for generating plausible (FBSs) is shown.  Using of \Rcode{conSTable} doesn’t require  proficiency in R. Nonetheless, some degree of familiarity with R will help with more complex modeling tasks.
+As pointed out in \cite{garieri2015}, the algorithm implemented in this package is developed for sampling plausible tables with limited information. This methodology can be applied to any balancing problem, e.g. balancing of Input Output tables, Social Accounting Matrix, etc.
+The functionalities of \Rcode{conSTable} are shown in the contest of two-way tables. The real world example are the FBSs of the 169 countries belonging to Agricultural Market Information System (AMIS) for years 2007-2012 and following the sampling strategy proposed in  \cite{garieri2015}. A careful reading of the cited paper is strongly recommended. 
 
 The package is currently available at \url{https://github.com/mrpozzi/conSTable/tree/develop} and, it has been integrated into Statistical Working System (SWS) of FAO and is directly executable by FAO staff.
-conSTable requires R, version 3.1.2 or higher. R is an open source statistical software which can be downloaded at \url{http://cran.r-project.org/}. Another requirement is package \Rcode{msm}.
+\Rcode{conSTable} requires R, version 3.1.2 or higher. R is an open source statistical software which can be downloaded at \url{http://cran.r-project.org/}. Another requirement is package \Rcode{msm}.
 Future directions of development include the option of using different prior distribution (i.e., normal skewness), additional constraints on the columns and many others.
 
 
@@ -98,11 +98,11 @@ To install the package from github we need to load the package\Rpackage{devtools
 <<init>>=
 if(!require(conSTable)){
   library(devtools)
-  install_github("mrpozzi/constable/tree",ref="develop")
+  install_github("mrpozzi/constable",ref="develop")
 }
 @ 
 
-As discussed in Garieri et al. (2015a), the function requires three
+As discussed in \cite{garieri2015}, the function requires three
 different files (a sample is included with the package).
 <<files>>=
 file <- system.file("extdata", "Adj.commodityContTab_db.csv",package="conSTable")
@@ -142,7 +142,7 @@ for each commodity $i$ in a given country $c$ during the period $t$.
 
 Because for each commodity, the expected value for Stock was obtained
 as difference between Production and the remaining terms, all the FBSs
-are balanced in input. See Section 2.2 in Garieri et al. (2015a) and
+are balanced in input. See Section 2.2 in \cite{garieri2015} and
 the references cited therein to understand how prior information were
 generated. The sd variables in the dataset represent the variability
 of the respective totals, expressed in terms of standard deviation.
@@ -327,13 +327,7 @@ the csv \Rcode{"Italy2011.csv"} if you run the algorithm with option \Rcode{writ
 
 \newpage
 \begin{thebibliography}{30}
-
-
-\bibitem{garieri2015}
-Garieri M., Golini, N. and Pozzi L. \emph{Placeholder}. (2015).
-
-
-
+\bibitem{garieri2015} Garieri M., Golini, N. and Pozzi L. \emph{Placeholder}. (2015).
 \end{thebibliography}
 
 
