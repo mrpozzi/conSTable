@@ -326,7 +326,7 @@ The best table is accessible at \Rcode{output\$bestTab} and written to
 the csv \Rcode{"Italy2011.csv"} if you run the algorithm with option \Rcode{writeTab=TRUE}
 
 \newpage
-\begin{thebibliography}{30}
+\begin{thebibliography}{9}
 \bibitem{garieri2015} Garieri M., Golini, N. and Pozzi L. \emph{Placeholder}. (2015).
 \end{thebibliography}
 
