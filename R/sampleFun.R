@@ -29,7 +29,7 @@ function(muTab, rowTot, prop=NULL, shift=0, controlCol, nIter=100, N=10000,sdev=
 	colMu <- colMeans(muTab, na.rm=T)
 	
 
-  # NB: questo è il caso in cui l'user imposta sia prop diverso da NULL che shift > 0
+  # NB: questo ?? il caso in cui l'user imposta sia prop diverso da NULL che shift > 0
   if(!is.null(prop) & !all(shift==0)) stop("Either prop between 0 and 1 and shift 0 or prop NULL and shift > 0")
   
 	if(!is.null(prop)) {
@@ -131,7 +131,7 @@ function(n0,muTab, bounds,controlCol=NULL,controlRow=NULL,nIter=100,N=10000,sdev
 		range(bounds[i,nc,])
 		}))
 		
-	# NB: questo é SOLO se non diamo control Col come input, quindi credo vada bene una normale (è il caso nel quale non abbiamo idea dei boundaries)
+	# NB: questo ?? SOLO se non diamo control Col come input, quindi credo vada bene una normale (?? il caso nel quale non abbiamo idea dei boundaries)
 	if(is.null(controlCol)) {
 		sdTab <- abs((bounds[,,2]-bounds[,,1])/2)
 		controlCol <- do.call(cbind,lapply(1:nc,function(j)range(rnorm(N,colSums(muTab),sqrt(colSums(sdTab^2))))))
@@ -320,3 +320,43 @@ setMethod("[[", signature = "conTa", definition = function (x, i,j,..., drop = T
 setMethod("$", signature = "conTa", definition = function(x, name) {
 	 x[[name]]
 	 })
+
+
+setMethod("hist", signature = "conTa", definition = function(x, margin=0, plot = TRUE, ...) {
+  # Find and Count:
+  # - Unique Values by Position
+  # - Unique Rows by Row
+  # - Unique Columns by Columns
+  
+  if(margin==1) {
+    vals <- list()
+    counts <- rep(NA,nrow(x@tables[[1]]))
+    for(i in 1:nrow(x@tables[[1]])){
+      vals[[i]] <- unique(do.call(rbind,lapply(x@tables,function(y)y[i,])),margin=1)
+      counts[i] <- nrow(vals[[i]])
+    }
+    barplot(counts)
+  } else if(margin==2) {
+    vals <- list()
+    counts <- rep(NA,ncol(x@tables[[1]]))
+    for(j in 1:ncol(x@tables[[1]])){
+        vals[[j]] <- unique(do.call(cbind,lapply(x@tables,function(y)y[,j])),margin=2)
+        counts[j] <- ncol(vals[[j]])
+    }
+    barplot(counts)
+  } else {
+    vals <- as.list(numeric(nrow(x@tables[[1]])*ncol(x@tables[[1]])))
+    dim(vals) <- c(nrow(x@tables[[1]]),ncol(x@tables[[1]]))
+    counts <- matrix(NA,nrow(x@tables[[1]]),ncol(x@tables[[1]]))
+    for(i in 1:nrow(x@tables[[1]])) {
+      for(j in 1:ncol(x@tables[[1]])) {
+        vals[[i,j]] <- unique(lapply(x@tables,function(y)y[i,j]))
+        counts[i,j] <- length(vals[[i,j]])
+      }
+    }
+    heatmap(counts)
+  }
+  
+  invisible(vals)
+  
+})
